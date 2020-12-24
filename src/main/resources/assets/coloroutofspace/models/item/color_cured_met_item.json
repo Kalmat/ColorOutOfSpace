@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "coloroutofspace:item/color_cured_met_item"
+  }
+}
