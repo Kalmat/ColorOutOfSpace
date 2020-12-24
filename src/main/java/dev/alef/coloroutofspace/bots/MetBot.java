@@ -79,7 +79,7 @@ public class MetBot {
 			worldIn.setBlockState(pos, Refs.infectedGlassPaneState);
 		}
 		else if (oldBlock instanceof BedBlock) {
-			BlockState bedState = Refs.infectedBedState.with(HorizontalBlock.HORIZONTAL_FACING, (Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)).with(BlockStateProperties.OCCUPIED, (boolean) oldState.getValues().get(BlockStateProperties.OCCUPIED));
+			BlockState bedState = Refs.infectedBedState.with(HorizontalBlock.HORIZONTAL_FACING, (Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)).with(BlockStateProperties.OCCUPIED, (Boolean) oldState.getValues().get(BlockStateProperties.OCCUPIED));
 			if (!oldBlock.getBlock().equals(Refs.infectedBedState.getBlock()) && oldState.getValues().get(BlockStateProperties.BED_PART).equals(BedPart.FOOT)) {
 		        BlockPos blockpos = pos.offset(((Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)));
 				worldIn.destroyBlock(blockpos, false);

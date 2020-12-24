@@ -36,6 +36,7 @@ import net.minecraft.potion.Potions;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.IntegerProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -241,7 +242,7 @@ public class Utils {
 
 		if (stateToClone.getBlock().equals(targetState.getBlock())) {
 		
-			ImmutableSet<net.minecraft.state.Property<?>> keys = stateToClone.getValues().keySet();
+			ImmutableSet<Property<?>> keys = stateToClone.getValues().keySet();
 			keys.forEach(prop -> {
 				if (prop instanceof BooleanProperty) {
 					this.cloneState = this.cloneState.with((BooleanProperty) prop, (Boolean) stateToClone.getValues().get(prop));
@@ -250,7 +251,7 @@ public class Utils {
 					this.cloneState  = this.cloneState.with((DirectionProperty) prop, (Direction) stateToClone.getValues().get(prop));
 				}
 				else if (prop instanceof IntegerProperty) {
-					this.cloneState = this.cloneState.with((IntegerProperty) prop, (int) stateToClone.getValues().get(prop));
+					this.cloneState = this.cloneState.with((IntegerProperty) prop, (Integer) stateToClone.getValues().get(prop));
 				}
 			});
 		}

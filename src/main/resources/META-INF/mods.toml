@@ -32,9 +32,7 @@ credits="Thanks for this example mod goes to Java" #optional
 authors="alef (aka Kalma)" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Let the Bot make the routine job of building large structures. You can build horizontal floors, walls, high towers or huge rooms just placing a few blocks.
-Do you like a structure (e.g. a Dessert Pyramid or an Ocean Ruin) to live in? Well, now you can COPY any structure or area, and PASTE it wherever you want.
-Besides all of this, if you make a mistake placing or breaking something you didn't want to, just undo it!
+The horror will fall from the Sky. Get infected, fight for a cure, kill everything and, eventually, get your rewards
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.examplemod]] #optional
