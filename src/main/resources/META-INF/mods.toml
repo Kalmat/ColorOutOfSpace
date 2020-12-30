@@ -19,7 +19,7 @@ modId="coloroutofspace" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 version="0.0.5" #mandatory
  # A display name for the mod
-displayName="Lazy Builder" #mandatory
+displayName="Color out of Space" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification <here>
 # updateJSONURL="http://myurl.me/" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
@@ -32,7 +32,7 @@ credits="Thanks for this example mod goes to Java" #optional
 authors="alef (aka Kalma)" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-The horror will fall from the Sky. Get infected, fight for a cure, kill everything and, eventually, get your rewards
+The horror will fall from the Sky. Get infected, fight for a cure, kill everything and, eventually, gather your rewards
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.examplemod]] #optional

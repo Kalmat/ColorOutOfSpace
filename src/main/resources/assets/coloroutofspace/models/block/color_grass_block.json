@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/cross",
+  "parent": "minecraft:block/cube_all",
   "textures": {
-    "cross": "coloroutofspace:block/color_grass"
+    "all": "minecraft:block/crimson_nylium"
   }
 }

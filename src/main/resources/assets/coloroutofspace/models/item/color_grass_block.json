@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "coloroutofspace:block/color_grass"
-  }
+  "parent": "minecraft:block/crimson_nylium"
 }

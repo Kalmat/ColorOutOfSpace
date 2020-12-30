@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.Utils;
 import dev.alef.coloroutofspace.bots.CalcVector;
+import dev.alef.coloroutofspace.bots.MetBot;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -19,8 +20,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 public class MeteoriteBlock extends Block {
@@ -35,16 +34,16 @@ public class MeteoriteBlock extends Block {
 	@Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		
-		if (placer instanceof PlayerEntity && !worldIn.isRemote) {
-			
+		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking())) {
+
 			PlayerData playerData = ColorOutOfSpace.playerDataList.get(worldIn, (PlayerEntity) placer);
-			Long firstJoin = playerData.getFirstJoin();
-			
-			playerData.reset(true);
-			playerData.setFirstJoin(firstJoin);
-			playerData.setFallPos(pos);
+			if (playerData.getMetPos() != null) {
+				worldIn.destroyBlock(playerData.getMetPos(), false);
+			}
 			worldIn.destroyBlock(pos, false);
-			Utils.metFall(worldIn, (PlayerEntity) placer, playerData);
+			playerData.setFallPos(pos);
+			MetBot metBot = new MetBot();
+			metBot.metFall(worldIn, (PlayerEntity) placer, playerData);
 		}
 		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 	}
@@ -52,12 +51,11 @@ public class MeteoriteBlock extends Block {
 	@Override
     public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)  {
 
-		if (!worldIn.isRemote) {
+		if (!worldIn.isRemote && !player.isSneaking()) {
 			PlayerData playerData = ColorOutOfSpace.playerDataList.get(worldIn, player);
-	
 			playerData.reset(false);
-			super.onBlockHarvested(worldIn, pos, state, player);
 		}
+		super.onBlockHarvested(worldIn, pos, state, player);
 	}
 	
 	//CLIENT
@@ -74,15 +72,11 @@ public class MeteoriteBlock extends Block {
 		super.animateTick(stateIn, worldIn, pos, rand);
 	}
 	
-    public void onPlayerDestroy(IWorld worldIn, BlockPos pos, BlockState state) {
-    	super.onPlayerDestroy(worldIn, pos, state);
-    }
-    
-    public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {
-    	super.onExplosionDestroy(worldIn, pos, explosionIn);
-    }
-
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
+    	
+    	if(!worldIn.isRemote) {
+    		Utils.infect(worldIn, pos, entityIn);
+    	}
     	super.onEntityWalk(worldIn, pos, entityIn);
     }
 }

@@ -22,46 +22,46 @@ public class Refs {
 	public static final String NAME = "alef's Color out of Space";
 	public static final String VERSION = "0.0.1-BETA";
 	
+	// TRUE: AntiPlayer AMPLIFIED strength - Infect ALL entities - Time to cure LIMITED to only while Meteorite is Active - Entities will ALWAYS duplicate
+	public static final boolean hardcoreMode = false;
+	
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 1000; // 24000 = one day (clock not increasing when sleeping)
+	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing when sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;
-	public static final int cureMaxLevel = 10;
+	public static final int cureMaxLevel = 20;
 	
-	public static final int lootChance = 9;  // 3/x Item - 2/x Entity - 1/x Water/Lava - (x-6)/x Default (Lepisma/Nothing)
+	public static final int infectedGrassChance = 3; // 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int lootChance = 20;  // 3/x Item - 2/x Entity - 1/x Water/Lava - (x-6)/x Default (Lepisma/Nothing)
 	public static final int enchantabilityChance = 2; // 1/x Chance (1 = 100%, 2 = 50%, ...)
 	public static final boolean spawnDefaultLootEntity = true;
-	public static final int spawnDefaultLootChance = 3; // 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int spawnDefaultLootChance = 4; // 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int dupEntityChance = 2;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int dupZoglinChance = 5;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
 	public static final EntityType<?> defaultLootEntity = EntityType.SILVERFISH;
-	
-	public static final List<Block> modBlockList = Arrays.asList(
-			BlockList.color_meteorite_block,
-			BlockList.color_infected_block,
-			BlockList.color_dirt_block,
-			BlockList.color_wood_block
-	);
 	
 	public static final ResourceLocation overworld = DimensionType.field_242710_a;
 	public static final ResourceLocation the_nether = DimensionType.field_242711_b;
 	public static final ResourceLocation the_end = DimensionType.field_242712_c;
 	
+	public static final BlockState meteoriteState = BlockList.color_meteorite_block.getDefaultState();
 	public static final BlockState infectedState = BlockList.color_infected_block.getDefaultState();
-	public static final BlockState infectedDirtState = BlockList.color_dirt_block.getDefaultState();
-	public static final BlockState infectedGrassBlockState = Blocks.field_235381_mu_.getDefaultState(); // Crimson Nylium
 	public static final BlockState infectedWoodState = BlockList.color_wood_block.getDefaultState();
+	public static final BlockState infectedGrassBlockState = BlockList.color_grass_block.getDefaultState();
+	public static final BlockState infectedGrassState = BlockList.color_grass.getDefaultState(); 
 	public static final BlockState infectedLeavesState = BlockList.color_leaves_block.getDefaultState();
-	//public static final BlockState infectedGrassState = BlockList.color_grass_block.getDefaultState();
-	//public static final BlockState infectedGrassState = Blocks.DEAD_BRAIN_CORAL.getDefaultState().with(BlockStateProperties.WATERLOGGED, false);
-	public static final BlockState infectedGrassState = Blocks.field_235343_mB_.getDefaultState();   // Crimson Roots
-	public static final BlockState infectedDoorState = Blocks.field_235360_mS_.getDefaultState();   // Crimson (purple) Door
-	public static final BlockState infectedBedState = Blocks.PURPLE_BED.getDefaultState();   // Crimson Roots
-	public static final BlockState infectedGlassState = Blocks.MAGENTA_STAINED_GLASS.getDefaultState();
-	public static final BlockState infectedGlassPaneState = Blocks.MAGENTA_STAINED_GLASS_PANE.getDefaultState();
 	public static final BlockState curedMetState = BlockList.color_cured_met_block.getDefaultState();
 	public static final BlockState curedState = BlockList.color_cured_block.getDefaultState();
+	public static final BlockState nonCuredState = Blocks.MYCELIUM.getDefaultState(); 
+	public static final BlockState infectedDoorState = Blocks.field_235360_mS_.getDefaultState();   // Crimson (purple) Door
+	public static final BlockState infectedBedState = Blocks.PURPLE_BED.getDefaultState();
+	public static final BlockState infectedGlassState = Blocks.PURPLE_STAINED_GLASS.getDefaultState();
+	public static final BlockState infectedGlassPaneState = Blocks.PURPLE_STAINED_GLASS_PANE.getDefaultState();
+	public static final BlockState infectedTorchState = Blocks.REDSTONE_TORCH.getDefaultState();
+	public static final BlockState infectedWallTorchState = Blocks.REDSTONE_WALL_TORCH.getDefaultState();
 	
 	public static final Color glintColor = new Color(1.0f, 0.3f, 0.7f, 0.1f); //0xFF33E0FB?
 	public static final Color waterColor = new Color(0x62529E); // end-water color
@@ -91,46 +91,34 @@ public class Refs {
 			"Can I borrow your blood, please?"
 	);
 	
-	public static final List<Block> infectNotStateList = Arrays.asList(
-			BlockList.color_cured_block,
-			BlockList.color_cured_met_block,
-			BlockList.color_dirt_block,
-			BlockList.color_grass_block,
-			BlockList.color_infected_block,
-			BlockList.color_leaves_block,
+	public static final List<Block> modBlockList = Arrays.asList(
 			BlockList.color_meteorite_block,
+			BlockList.color_infected_block,
 			BlockList.color_wood_block,
-			Refs.infectedGrassState.getBlock(),
-			Refs.infectedGrassBlockState.getBlock(),
+			BlockList.color_grass_block,
+			BlockList.color_grass,
+			BlockList.color_leaves_block,
+			BlockList.color_cured_met_block,
+			BlockList.color_cured_block,
 			Refs.infectedBedState.getBlock(),
 			Refs.infectedDoorState.getBlock(),
 			Refs.infectedGlassState.getBlock(),
-			Refs.infectedGlassPaneState.getBlock(),
-			Blocks.MAGENTA_BED,
-			Blocks.AIR,
-			Blocks.CAVE_AIR,
-			Blocks.VOID_AIR,
-			Blocks.WATER,
-			Blocks.LAVA,
-			Blocks.FIRE,
-			Blocks.GRASS,
-			Blocks.TALL_GRASS,
-			Blocks.SEAGRASS,
-			Blocks.TALL_SEAGRASS,
-			Blocks.KELP,
-			Blocks.KELP_PLANT,
-			Blocks.SNOW,
-			Blocks.ICE,
-			Blocks.BLUE_ICE,
-			Blocks.FROSTED_ICE,
-			Blocks.PACKED_ICE
+			Refs.infectedGlassPaneState.getBlock()
+	);
+	
+	public static final List<Block> modBlocksToCureList = Arrays.asList(
+			BlockList.color_infected_block,
+			BlockList.color_grass_block,
+			BlockList.color_wood_block
 	);
 	
 	public static final List<Block> dirts = Arrays.asList(
 			Blocks.DIRT,
 			Blocks.COARSE_DIRT,
 			Blocks.GRASS_BLOCK,
-			Blocks.GRASS_PATH
+			Blocks.GRASS_PATH,
+			Blocks.PODZOL,
+			Blocks.MYCELIUM
 	);
 	
 	public static final List<Block> chests = Arrays.asList(
@@ -150,55 +138,57 @@ public class Refs {
 	);
 	
 	public static final List<Item> lootItems = Arrays.asList(
-			Items.DIAMOND,
-			Items.EMERALD,
-			Items.ENCHANTED_BOOK,
-			Items.BOOK,
-			Items.POTION,
-			Items.SPLASH_POTION,
-			Items.GOLD_INGOT,
+			Items.OBSIDIAN,
+			Items.MAP,
 			Items.GOLDEN_APPLE,
 			Items.BEACON,
 			Items.TOTEM_OF_UNDYING,
-			Items.IRON_HELMET,
-			Items.GOLDEN_HELMET,
-			Items.DIAMOND_HELMET,
-			Items.IRON_CHESTPLATE,
-			Items.GOLDEN_CHESTPLATE,
-			Items.DIAMOND_CHESTPLATE,
-			Items.IRON_LEGGINGS,
-			Items.GOLDEN_LEGGINGS,
-			Items.DIAMOND_LEGGINGS,
-			Items.IRON_BOOTS,
-			Items.GOLDEN_BOOTS,
-			Items.DIAMOND_BOOTS,
-			Items.IRON_SWORD,
-			Items.IRON_PICKAXE,
-			Items.IRON_AXE,
 			Items.DIAMOND_SWORD,
 			Items.DIAMOND_PICKAXE,
 			Items.DIAMOND_AXE,
+			Items.DIAMOND,
+			Items.DIAMOND_HELMET,
+			Items.DIAMOND_CHESTPLATE,
+			Items.DIAMOND_LEGGINGS,
+			Items.DIAMOND_BOOTS,
+			Items.EMERALD,
+			Items.IRON_SWORD,
+			Items.IRON_PICKAXE,
+			Items.IRON_AXE,
+			Items.IRON_BLOCK,
+			Items.BOW,
 			Items.CROSSBOW,
-			Items.IRON_HORSE_ARMOR,
+			Items.POTION,
 			Items.GOLDEN_HORSE_ARMOR,
+			Items.GOLD_BLOCK,
 			Items.SADDLE,
 			Items.LEAD,
-			Items.LAPIS_LAZULI,
-			Items.OBSIDIAN,
-			Items.MAP,
-			Items.FILLED_MAP,
 			Items.COMPASS,
 			Items.CLOCK,
+			Items.REDSTONE_BLOCK,
 			Items.NAME_TAG,
+			Items.SPLASH_POTION,
 			Items.SLIME_BALL,
+			Items.FIRE_CHARGE,
+			Items.BOOK,
+			Items.LAPIS_BLOCK,
+			//Items.ENDER_EYE,
+			Items.ENDER_PEARL
 			//Items.BLAZE_ROD,
 			//Items.END_ROD,
 			//Items.ELYTRA,
 			//Items.END_CRYSTAL,
 			//Items.WITHER_ROSE,
 			//Items.GHAST_TEAR,
-			Items.ENDER_EYE,
-			Items.ENDER_PEARL
+			//Items.IRON_HORSE_ARMOR,
+			//Items.IRON_HELMET,
+			//Items.IRON_CHESTPLATE,
+			//Items.GOLDEN_HELMET,
+			//Items.IRON_LEGGINGS,
+			//Items.IRON_BOOTS,
+			//Items.GOLDEN_CHESTPLATE,
+			//Items.GOLDEN_LEGGINGS,
+			//Items.GOLDEN_BOOTS,
 	);
 	
 	public static final List<Fluid> nonLootBlocks = Arrays.asList(
@@ -227,6 +217,7 @@ public class Refs {
 			EntityType.SHEEP,
 			EntityType.CAT,
 			EntityType.CHICKEN,
+			EntityType.PARROT,
 			EntityType.SPIDER,
 			EntityType.CAVE_SPIDER,
 			EntityType.HORSE,
@@ -234,6 +225,7 @@ public class Refs {
 			EntityType.OCELOT,
 			EntityType.FOX,
 			EntityType.POLAR_BEAR,
+			EntityType.PANDA,
 			EntityType.DONKEY,
 			EntityType.MULE,
 			EntityType.DOLPHIN,
@@ -254,14 +246,16 @@ public class Refs {
 	public static final List<EntityType<?>> infectedEntities = Arrays.asList(
 			EntityType.HUSK,
 			EntityType.field_242287_aj, // PIGLIN BRUTE
-			EntityType.field_233590_aW_, // ZOGLIN
-			EntityType.field_233590_aW_, // ZOGLIN
+			EntityType.RAVAGER,
+			EntityType.BLAZE, 			//EntityType.field_233590_aW_, // ZOGLIN (way too aggressive)
 			EntityType.SHULKER,
+			EntityType.GHAST,
 			EntityType.GHAST,
 			EntityType.MAGMA_CUBE,
 			EntityType.MAGMA_CUBE,
 			EntityType.ZOMBIE_HORSE,
 			EntityType.ZOMBIE_HORSE,
+			EntityType.field_233589_aE_, // STRIDER
 			EntityType.field_233589_aE_, // STRIDER
 			EntityType.field_233589_aE_, // STRIDER
 			EntityType.field_233589_aE_, // STRIDER

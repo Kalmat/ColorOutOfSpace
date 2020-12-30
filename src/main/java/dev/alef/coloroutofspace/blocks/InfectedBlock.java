@@ -1,5 +1,7 @@
 package dev.alef.coloroutofspace.blocks;
 
+import java.util.Random;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,12 +9,8 @@ import dev.alef.coloroutofspace.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 public class InfectedBlock extends Block {
@@ -24,24 +22,6 @@ public class InfectedBlock extends Block {
 		super(properties);
 	}
 
-	@Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-	}
-    
-	@Override
-    public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)  {
-		super.onBlockHarvested(worldIn, pos, state, player);
-	}
-	
-    public void onPlayerDestroy(IWorld worldIn, BlockPos pos, BlockState state) {
-    	super.onPlayerDestroy(worldIn, pos, state);
-    }
-    
-    public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {
-    	super.onExplosionDestroy(worldIn, pos, explosionIn);
-    }
-
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
     	
     	if(!worldIn.isRemote) {
@@ -49,4 +29,10 @@ public class InfectedBlock extends Block {
     	}
     	super.onEntityWalk(worldIn, pos, entityIn);
     }
+    
+	public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
+		if (rand.nextInt(10) == 0) {
+			worldIn.addParticle(ParticleTypes.ENTITY_EFFECT, (double)pos.getX() + rand.nextDouble(), (double)pos.getY() + 1.1D, (double)pos.getZ() + rand.nextDouble(), 0.0D, 0.0D, 0.0D);
+		}
+	}
 }

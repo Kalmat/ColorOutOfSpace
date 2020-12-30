@@ -18,8 +18,10 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -317,6 +319,15 @@ public class ColorOutOfSpaceRender {
 	
 	public static void resumeSound() {
 		Minecraft.getInstance().getSoundHandler().resume();
+	}
+	
+	public static ResourceLocation cloneSkin(World worldIn, PlayerEntity player, Entity mob, BlockPos pos) {
+		ResourceLocation skin1 = Minecraft.getInstance().player.getLocationSkin();
+		//GameProfile playerProfile = Minecraft.getInstance().player.getGameProfile();
+		//Map<Type, MinecraftProfileTexture> map = Minecraft.getInstance().getSkinManager().loadSkinFromCache(playerProfile);
+		//ResourceLocation skin2 = Minecraft.getInstance().getSkinManager().loadSkin((MinecraftProfileTexture)map.get(Type.SKIN), Type.SKIN);
+		//mob.copyDataFromOld(player);
+		return skin1;
 	}
 }
 

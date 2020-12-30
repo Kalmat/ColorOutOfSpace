@@ -19,7 +19,7 @@ The horror which fell from the sky.
 
 ### THE INFECTION ###
 
-* You just need to walk on any infected block (dirt, rock or wood)
+* You just need to walk on any infected block (infected dirt, rock or wood... well, you'll notice)
 * Apart from other disgraceful effects, at this point you will not be able to loot anything from mining (you still can loot chests and hunt for food)
 
 ### THE QUEST FOR A CURE ###

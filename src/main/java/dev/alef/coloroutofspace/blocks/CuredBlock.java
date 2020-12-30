@@ -7,32 +7,26 @@ import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.Utils;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class CuredBlock extends Block {
-
+	
 	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LogManager.getLogger();
-	
-    public CuredBlock(Properties properties) {
+
+	public CuredBlock(AbstractBlock.Properties properties) {
 		super(properties);
-    }
-    
-	@Override
-    public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 	}
-    
+
 	@Override
     public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)  {
 		if (!worldIn.isRemote) {
@@ -45,38 +39,35 @@ public class CuredBlock extends Block {
 		
 		Random rand1 = new Random();
 		Random rand2 = new Random();
-		int type = rand1.nextInt(Math.max(6, Refs.lootChance));
+		int type = rand1.nextInt(Math.max(7, Refs.lootChance));
+		
+		if (type == 0 || type == 1 || type == 2 || type == 3) {  // Item
 
-		if (type == 0 || type == 1 || type == 2) {  // Item
-			
 			Item spawnItem = Refs.lootItems.get(rand2.nextInt(Refs.lootItems.size()));
-
-			if (spawnItem.equals(Items.POTION) || spawnItem.equals(Items.SPLASH_POTION)) {
-				Utils.spawnPotion(worldIn, player, pos, spawnItem);
-			}
-			else if (spawnItem.equals(Items.FILLED_MAP)) {
-				Utils.spawnMap(worldIn, player, pos, spawnItem);
-			}
-			else {
-				Utils.spawnItem(worldIn, player, pos, spawnItem, true, true);
-			}
+			Utils.spawnItem(worldIn, player, pos, spawnItem, true, true, Refs.enchantabilityChance);
 		}
-		else if (type == 3 || type == 4) {  // Entity
+		else if (type == 4 || type == 5) {  // Entity
 			
 			EntityType<?> spawnEntity = Refs.lootEntities.get(rand2.nextInt(Refs.lootEntities.size()));
-			Utils.spawnEntity(worldIn, player, pos, spawnEntity, true);
+			Utils.spawnEntity(worldIn, player, pos, spawnEntity, true, null);
 		}
-		else if (type == 5) { // Water or Lava
+		else if (type == 6) { // Water or Lava
 			
-			Fluid spawnBlock = Refs.nonLootBlocks.get(rand2.nextInt(Refs.nonLootBlocks.size()));
-			Utils.spawnFluid(worldIn, player, pos, spawnBlock);
+			Fluid spawnFluid = Refs.nonLootBlocks.get(rand2.nextInt(Refs.nonLootBlocks.size()));
+			Utils.spawnFluid(worldIn, player, pos, spawnFluid);
   		}
 		else if (Refs.spawnDefaultLootEntity) { // Default (lepisma or nothing)
 			
 			if (rand2.nextInt(Refs.spawnDefaultLootChance) == 0) {
 				EntityType<?> spawnEntity = Refs.defaultLootEntity;
-				Utils.spawnEntity(worldIn, player, pos, spawnEntity, false);
+				Utils.spawnEntity(worldIn, player, pos, spawnEntity, false, null);
 			}
+		}
+	}
+	
+	public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
+		if (rand.nextInt(10) == 0) {
+			worldIn.addParticle(ParticleTypes.INSTANT_EFFECT, (double)pos.getX() + rand.nextDouble(), (double)pos.getY() + 1.1D, (double)pos.getZ() + rand.nextDouble(), 0.0D, 0.0D, 0.0D);
 		}
 	}
 }
