@@ -33,7 +33,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
@@ -69,7 +68,6 @@ public class Utils {
 			Utils.applyInfectedEffects(player, true);
 			if (!playerData.isPlayerInfected()) {
 				playerData.setPlayerInfected(true);
-				LOGGER.info("ANTIPLAYER "+worldIn+" "+worldIn.isRemote+" "+player+" "+playerData.getMetPos());
 				Utils.spawnAntiPlayer((ServerWorld)worldIn, player, playerData.getMetPos().up());
 			}
     	}
@@ -148,7 +146,7 @@ public class Utils {
 		if (spawnEntity.equals(EntityType.LIGHTNING_BOLT) && player != null) {
 			pos = new BlockPos(player.getPositionVec());
 		}
-		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, new CompoundNBT(), null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
+		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.SPAWN_EGG, false, false);
 		if (applyPersistence) {
 			Utils.applyPersistence(spawnedEntity, name);
 		}

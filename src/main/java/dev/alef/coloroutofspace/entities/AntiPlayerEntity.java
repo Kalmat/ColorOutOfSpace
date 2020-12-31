@@ -38,7 +38,7 @@ public class AntiPlayerEntity extends ZombieEntity {
 	}
 
    public static AttributeModifierMap.MutableAttribute func_234342_eQ_() {
-	   return MonsterEntity.func_234295_eP_().func_233815_a_(Attributes.field_233819_b_, 35.0D).func_233815_a_(Attributes.field_233821_d_, (double)0.23F).func_233815_a_(Attributes.field_233823_f_, 3.0D).func_233815_a_(Attributes.field_233826_i_, 2.0D).func_233814_a_(Attributes.field_233829_l_);
+	   return MonsterEntity.func_234295_eP_().createMutableAttribute(Attributes.MAX_HEALTH, 120.0D).createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D).createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.3F).createMutableAttribute(Attributes.ATTACK_DAMAGE, 12.0D).createMutableAttribute(Attributes.ATTACK_KNOCKBACK, 1.5D).createMutableAttribute(Attributes.ARMOR, 8.0D).createMutableAttribute(Attributes.ZOMBIE_SPAWN_REINFORCEMENTS);
    }
 
    public static boolean func_223334_b(EntityType<AntiPlayerEntity> p_223334_0_, IServerWorld p_223334_1_, SpawnReason reason, BlockPos p_223334_3_, Random p_223334_4_) {
@@ -50,26 +50,24 @@ public class AntiPlayerEntity extends ZombieEntity {
 	   if (Refs.hardcoreMode) {
 		   return MonsterEntity
 				   .func_234295_eP_()
-				   .func_233815_a_(Attributes.field_233818_a_, 240.0D)  			// Max Health
-				   .func_233815_a_(Attributes.field_233819_b_, 120.0D)  			// Follow Range
-				   .func_233815_a_(Attributes.field_233821_d_, (double)0.35F)		// Movement Speed
-				   .func_233815_a_(Attributes.field_233823_f_, 20.0D)				// Attack Damage
-				   .func_233815_a_(Attributes.field_233824_g_, 2.0D)				// Attack KnockBack
-				   .func_233815_a_(Attributes.field_233826_i_, 16.0D)				// Armor
-		   		   .func_233814_a_(Attributes.field_233829_l_);						// Zombie: Spawn Reinforcements
-
+				   .createMutableAttribute(Attributes.MAX_HEALTH, 240.0D)
+				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
+				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.35F)
+				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 20.0D)
+				   .createMutableAttribute(Attributes.ATTACK_KNOCKBACK, 2.0D)
+				   .createMutableAttribute(Attributes.ARMOR, 16.0D)
+				   .createMutableAttribute(Attributes.ZOMBIE_SPAWN_REINFORCEMENTS);
 	   }
 	   else {
 		   return MonsterEntity
 				   .func_234295_eP_()
-				   .func_233815_a_(Attributes.field_233818_a_, 120.0D)  			// Max Health
-				   .func_233815_a_(Attributes.field_233819_b_, 120.0D)  			// Follow Range
-				   .func_233815_a_(Attributes.field_233821_d_, (double)0.3F)		// Movement Speed
-				   .func_233815_a_(Attributes.field_233823_f_, 12.0D)				// Attack Damage
-				   .func_233815_a_(Attributes.field_233824_g_, 1.5D)				// Attack KnockBack
-				   .func_233815_a_(Attributes.field_233826_i_, 8.0D)				// Armor
-				   .func_233814_a_(Attributes.field_233829_l_);						// Zombie: Spawn Reinforcements
-
+				   .createMutableAttribute(Attributes.MAX_HEALTH, 120.0D)
+				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
+				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.3F)
+				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 12.0D)
+				   .createMutableAttribute(Attributes.ATTACK_KNOCKBACK, 1.5D)
+				   .createMutableAttribute(Attributes.ARMOR, 8.0D)
+				   .createMutableAttribute(Attributes.ZOMBIE_SPAWN_REINFORCEMENTS);
 	   }
    }
 
@@ -96,7 +94,7 @@ public class AntiPlayerEntity extends ZombieEntity {
    public boolean attackEntityAsMob(Entity entityIn) {
       boolean flag = super.attackEntityAsMob(entityIn);
       if (flag && this.getHeldItemMainhand().isEmpty() && entityIn instanceof LivingEntity) {
-         float f = this.world.getDifficultyForLocation(this.func_233580_cy_()).getAdditionalDifficulty();
+         float f = this.world.getDifficultyForLocation(this.getPosition()).getAdditionalDifficulty();
          ((LivingEntity)entityIn).addPotionEffect(new EffectInstance(Effects.HUNGER, 140 * (int)f));
       }
 

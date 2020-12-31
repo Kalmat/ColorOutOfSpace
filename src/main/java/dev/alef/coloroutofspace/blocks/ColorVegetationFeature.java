@@ -42,4 +42,10 @@ public class ColorVegetationFeature extends Feature<BlockStateProvidingFeatureCo
 			return false;
 		}
 	}
+
+	@Override
+	public boolean generate(ISeedReader reader, ChunkGenerator generator, Random rand, BlockPos pos,
+		BlockStateProvidingFeatureConfig config) {
+		return false;
+	}
 }

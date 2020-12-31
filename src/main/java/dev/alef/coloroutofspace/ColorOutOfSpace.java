@@ -116,7 +116,7 @@ public class ColorOutOfSpace {
 	    // some preinit code
 		if (ColorOutOfSpace.debug) { LOGGER.info("HELLO from PREINIT"); }
 	    DeferredWorkQueue.runLater(() -> {
-            GlobalEntityTypeAttributes.put((EntityType<? extends LivingEntity>) EntityList.color_anti_player, AntiPlayerEntity.setCustomAttributes().func_233813_a_());
+            GlobalEntityTypeAttributes.put((EntityType<? extends LivingEntity>) EntityList.color_anti_player, AntiPlayerEntity.setCustomAttributes().create());
         });
 	}
 	 
@@ -361,14 +361,14 @@ public class ColorOutOfSpace {
 					}
 				}
 				else if (!(entity instanceof PlayerEntity) && !(attacker instanceof PlayerEntity) &&
-						entity.world.func_230315_m_().func_242725_p().equals(Refs.overworld) &&
+						entity.world.getDimensionKey().getLocation().equals(Refs.overworld) &&
 						Refs.infectedDupEntities.contains(attacker.getType())) {
 					
 					Random rand = new Random();
 					EntityType<?> spawnEntity = attacker.getType();
 					int chance = Refs.dupEntityChance;
 					
-					if (spawnEntity.equals(EntityType.field_233590_aW_)) {
+					if (spawnEntity.equals(EntityType.ZOGLIN)) {
 						chance = Refs.dupZoglinChance;
 					}
 					if (rand.nextInt(chance) == 0 || Refs.hardcoreMode) {

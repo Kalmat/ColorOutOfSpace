@@ -54,7 +54,7 @@ public class InfectedGrassBlock extends Block implements IGrowable {
    }
 
    public void grow(ServerWorld worldIn, Random rand, BlockPos pos, BlockState state) {
-	   ColorVegetationFeature.func_236325_a_(worldIn, rand, pos.up(), Features.Configs.field_243987_k, 3, 1);
+	   ColorVegetationFeature.func_236325_a_(worldIn, rand, pos.up(), Features.Configs.CRIMSON_FOREST_VEGETATION_CONFIG, 3, 1);
    }
    
    public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {

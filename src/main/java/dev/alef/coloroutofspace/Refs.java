@@ -44,9 +44,9 @@ public class Refs {
 	public static final int dupZoglinChance = 5;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
 	public static final EntityType<?> defaultLootEntity = EntityType.SILVERFISH;
 	
-	public static final ResourceLocation overworld = DimensionType.field_242710_a;
-	public static final ResourceLocation the_nether = DimensionType.field_242711_b;
-	public static final ResourceLocation the_end = DimensionType.field_242712_c;
+	public static final ResourceLocation overworld = DimensionType.OVERWORLD_ID;
+	public static final ResourceLocation the_nether = DimensionType.THE_NETHER_ID;
+	public static final ResourceLocation the_end = DimensionType.THE_END_ID;
 	
 	public static final BlockState meteoriteState = BlockList.color_meteorite_block.getDefaultState();
 	public static final BlockState infectedState = BlockList.color_infected_block.getDefaultState();
@@ -57,7 +57,7 @@ public class Refs {
 	public static final BlockState curedMetState = BlockList.color_cured_met_block.getDefaultState();
 	public static final BlockState curedState = BlockList.color_cured_block.getDefaultState();
 	public static final BlockState nonCuredState = Blocks.MYCELIUM.getDefaultState(); 
-	public static final BlockState infectedDoorState = Blocks.field_235360_mS_.getDefaultState();   // Crimson (purple) Door
+	public static final BlockState infectedDoorState = Blocks.CRIMSON_DOOR.getDefaultState();
 	public static final BlockState infectedBedState = Blocks.PURPLE_BED.getDefaultState();
 	public static final BlockState infectedGlassState = Blocks.PURPLE_STAINED_GLASS.getDefaultState();
 	public static final BlockState infectedGlassPaneState = Blocks.PURPLE_STAINED_GLASS_PANE.getDefaultState();
@@ -257,10 +257,10 @@ public class Refs {
 			EntityType.MAGMA_CUBE,
 			EntityType.ZOMBIE_HORSE,
 			EntityType.ZOMBIE_HORSE,
-			EntityType.field_233589_aE_, // STRIDER
-			EntityType.field_233589_aE_, // STRIDER
-			EntityType.field_233589_aE_, // STRIDER
-			EntityType.field_233589_aE_, // STRIDER
+			EntityType.STRIDER,
+			EntityType.STRIDER,
+			EntityType.STRIDER,
+			EntityType.STRIDER,
 			EntityType.SKELETON_HORSE,
 			EntityType.SKELETON_HORSE,
 			EntityType.ELDER_GUARDIAN,
@@ -281,12 +281,12 @@ public class Refs {
 	public static final List<EntityType<?>> infectedDupEntities = Arrays.asList(
 			EntityType.HUSK,
 			EntityType.field_242287_aj, // PIGLIN BRUTE
-			EntityType.field_233590_aW_, // ZOGLIN
+			EntityType.ZOGLIN,
 			EntityType.SHULKER,
 			EntityType.GHAST,
 			EntityType.MAGMA_CUBE,
 			EntityType.ZOMBIE_HORSE,
-			EntityType.field_233589_aE_, // STRIDER
+			EntityType.STRIDER,
 			EntityType.ENDERMITE,
 			EntityType.BLAZE, 
 			EntityType.VEX
