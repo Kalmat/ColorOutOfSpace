@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import dev.alef.coloroutofspace.lists.BlockList;
+import dev.alef.coloroutofspace.lists.EntityList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -134,7 +135,8 @@ public class Refs {
 			EntityType.WANDERING_TRADER,
 			EntityType.VINDICATOR,
 			EntityType.ILLUSIONER,
-			EntityType.EVOKER
+			EntityType.EVOKER,
+			EntityList.color_anti_player
 	);
 	
 	public static final List<Item> lootItems = Arrays.asList(

@@ -44,7 +44,7 @@ public class MetBot {
 		if (playerData.getFallPos() == null) {
 			Random rand1 = new Random();
 			Random rand2 = new Random();
-			int offset = rand1.nextInt(5) + 10;
+			int offset = rand1.nextInt(10) + 5;
 			playerData.setFallPos(new BlockPos(player.getPositionVec()).offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
 		}
 		BlockPos pos = playerData.getFallPos();

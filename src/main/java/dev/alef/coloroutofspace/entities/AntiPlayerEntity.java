@@ -55,7 +55,9 @@ public class AntiPlayerEntity extends ZombieEntity {
 				   .func_233815_a_(Attributes.field_233821_d_, (double)0.35F)		// Movement Speed
 				   .func_233815_a_(Attributes.field_233823_f_, 20.0D)				// Attack Damage
 				   .func_233815_a_(Attributes.field_233824_g_, 2.0D)				// Attack KnockBack
-				   .func_233815_a_(Attributes.field_233826_i_, 16.0D);				// Armor
+				   .func_233815_a_(Attributes.field_233826_i_, 16.0D)				// Armor
+		   		   .func_233814_a_(Attributes.field_233829_l_);						// Zombie: Spawn Reinforcements
+
 	   }
 	   else {
 		   return MonsterEntity
@@ -65,22 +67,10 @@ public class AntiPlayerEntity extends ZombieEntity {
 				   .func_233815_a_(Attributes.field_233821_d_, (double)0.3F)		// Movement Speed
 				   .func_233815_a_(Attributes.field_233823_f_, 12.0D)				// Attack Damage
 				   .func_233815_a_(Attributes.field_233824_g_, 1.5D)				// Attack KnockBack
-				   .func_233815_a_(Attributes.field_233826_i_, 8.0D);				// Armor
+				   .func_233815_a_(Attributes.field_233826_i_, 8.0D)				// Armor
+				   .func_233814_a_(Attributes.field_233829_l_);						// Zombie: Spawn Reinforcements
+
 	   }
-	   
-//			   .func_233815_a_(Attributes.field_233818_a_, 80.0D)  				// Max Health
-//			   .func_233815_a_(Attributes.field_233819_b_, 35.0D)  				// Follow Range
-//			   .func_233815_a_(Attributes.field_233820_c_, 2.0D)				// Knockback resistance
-//			   .func_233815_a_(Attributes.field_233821_d_, (double)0.5F)		// Movement Speed
-//			   .func_233815_a_(Attributes.field_233822_e_, (double)0.0F)		// Flying Speed
-//			   .func_233815_a_(Attributes.field_233823_f_, 8.0D)				// Attack Damage
-//			   .func_233815_a_(Attributes.field_233824_g_, 4.0D)				// Attack KnockBack
-//			   .func_233815_a_(Attributes.field_233825_h_, 2.0D)				// Attack Speed
-//			   .func_233815_a_(Attributes.field_233826_i_, 2.0D);				// Armor
-//			   .func_233815_a_(Attributes.field_233827_j_, 2.0D)				// Armor Toughness
-//			   .func_233815_a_(Attributes.field_233828_k_, 2.0D)				// Luck
-//			   .func_233814_a_(Attributes.field_233829_l_)						// Zombie: Spawn Reinforcements
-//			   .func_233815_a_(Attributes.field_233830_m_, 2.0D);				// Horse: Jump Strength
    }
 
    protected boolean shouldBurnInDay() {

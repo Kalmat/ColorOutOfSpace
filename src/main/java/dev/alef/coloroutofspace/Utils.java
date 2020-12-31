@@ -69,6 +69,7 @@ public class Utils {
 			Utils.applyInfectedEffects(player, true);
 			if (!playerData.isPlayerInfected()) {
 				playerData.setPlayerInfected(true);
+				LOGGER.info("ANTIPLAYER "+worldIn+" "+worldIn.isRemote+" "+player+" "+playerData.getMetPos());
 				Utils.spawnAntiPlayer((ServerWorld)worldIn, player, playerData.getMetPos().up());
 			}
     	}
