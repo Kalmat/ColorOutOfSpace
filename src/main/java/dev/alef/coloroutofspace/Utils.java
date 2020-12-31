@@ -58,7 +58,6 @@ public class Utils {
 	public static final List<Enchantment> enchantments = new ArrayList<Enchantment>(ForgeRegistries.ENCHANTMENTS.getValues());
 	public static final List<Structure<?>> structures = new ArrayList<Structure<?>>(ForgeRegistries.STRUCTURE_FEATURES.getValues());
 	
-	@SuppressWarnings("unused")
 	public static void infect(World worldIn, BlockPos pos, Entity entityIn) {
 		
     	if (entityIn instanceof PlayerEntity) {
@@ -82,10 +81,10 @@ public class Utils {
 				Entity spawnedEntity = Utils.spawnEntity(worldIn, null, new BlockPos(entityIn.getPositionVec()).up(), Refs.infectedEntities.get(i), true, null);
 				spawnedEntity.setGlowing(true);
 			}
-			else if (Refs.hardcoreMode && entityIn instanceof MonsterEntity && !entityIn.hasCustomName()) {
+			else if (Refs.difficulty == Refs.HARDCORE && entityIn instanceof MonsterEntity && !entityIn.hasCustomName()) {
 				entityIn.setGlowing(true);
 				Utils.applyPersistence(entityIn, null);
-				// Even more hardcore: turn them all into ZOGLINGS!!!! (but think what to do with the AntiPlayer... spawn jailed on the meteorite?)
+				// Even more hardcore: turn them all into ZOGLINGS!!!! (but think what to do with the AntiPlayer... spawn jailed right on top of the meteorite?)
 			}
     	}
 	}
@@ -98,7 +97,7 @@ public class Utils {
 			}
 		}
 		spawnedEntity.setGlowing(true);
-		if (Refs.hardcoreMode) {
+		if (Refs.difficulty == Refs.HARDCORE) {
 			((LivingEntity)spawnedEntity).addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE));
 		}
 		return (LivingEntity) spawnedEntity;
@@ -146,7 +145,7 @@ public class Utils {
 		if (spawnEntity.equals(EntityType.LIGHTNING_BOLT) && player != null) {
 			pos = new BlockPos(player.getPositionVec());
 		}
-		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.SPAWN_EGG, false, false);
+		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
 		if (applyPersistence) {
 			Utils.applyPersistence(spawnedEntity, name);
 		}

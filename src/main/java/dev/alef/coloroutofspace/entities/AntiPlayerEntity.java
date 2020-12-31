@@ -47,10 +47,10 @@ public class AntiPlayerEntity extends ZombieEntity {
    
    public static AttributeModifierMap.MutableAttribute setCustomAttributes() {
 	   
-	   if (Refs.hardcoreMode) {
+	   if (Refs.difficulty == Refs.HARDCORE) {
 		   return MonsterEntity
 				   .func_234295_eP_()
-				   .createMutableAttribute(Attributes.MAX_HEALTH, 240.0D)
+				   .createMutableAttribute(Attributes.MAX_HEALTH, 120.0D)
 				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
 				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.35F)
 				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 20.0D)
@@ -61,7 +61,7 @@ public class AntiPlayerEntity extends ZombieEntity {
 	   else {
 		   return MonsterEntity
 				   .func_234295_eP_()
-				   .createMutableAttribute(Attributes.MAX_HEALTH, 120.0D)
+				   .createMutableAttribute(Attributes.MAX_HEALTH, 80.0D)
 				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
 				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.3F)
 				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 12.0D)
@@ -97,7 +97,6 @@ public class AntiPlayerEntity extends ZombieEntity {
          float f = this.world.getDifficultyForLocation(this.getPosition()).getAdditionalDifficulty();
          ((LivingEntity)entityIn).addPotionEffect(new EffectInstance(Effects.HUNGER, 140 * (int)f));
       }
-
       return flag;
    }
 

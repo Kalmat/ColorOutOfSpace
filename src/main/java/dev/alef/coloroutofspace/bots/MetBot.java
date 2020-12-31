@@ -67,7 +67,7 @@ public class MetBot {
 		playerData.setMetPos(pos);
 		playerData.setFallDay(-1);
 		playerData.setPlayerCured(false);
-		if (Refs.hardcoreMode) {
+		if (Refs.difficulty == Refs.HARDCORE) {
 			playerData.setPlayerInfected(false);
 			Networking.sendToClient(new PacketCured(playerData.getPlayerUUID()), (ServerPlayerEntity) playerData.getPlayer());
 			playerData.setCureLevel(0);

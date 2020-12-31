@@ -23,13 +23,15 @@ public class Refs {
 	public static final String NAME = "alef's Color out of Space";
 	public static final String VERSION = "0.0.1-BETA";
 	
-	// TRUE: AntiPlayer AMPLIFIED strength - Infect ALL entities - Time to cure LIMITED to only while Meteorite is Active - Entities will ALWAYS duplicate
-	public static final boolean hardcoreMode = false;
+	public static int difficulty = Refs.NORMAL;
+	public static int NORMAL = 0;
+	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to only while Meteorite is Active - Entities will ALWAYS duplicate
+	public static int HARDCORE = 1;
 	
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing when sleeping)
+	public static final int timeIncrease = 500; // 24000 = one day (clock not increasing when sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;

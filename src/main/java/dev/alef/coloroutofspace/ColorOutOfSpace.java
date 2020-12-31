@@ -20,6 +20,7 @@ import dev.alef.coloroutofspace.network.PacketAddCure;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerDataList;
 import dev.alef.coloroutofspace.bots.MetBot;
+import dev.alef.coloroutofspace.config.ConfigFile;
 import dev.alef.coloroutofspace.items.MeteoriteSwordTier;
 import dev.alef.coloroutofspace.lists.BlockItemList;
 import dev.alef.coloroutofspace.render.ColorOutOfSpaceRender;
@@ -54,8 +55,10 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
@@ -109,6 +112,9 @@ public class ColorOutOfSpace {
 		
 		// Create the player data lists we will use on client and server sides
 		ColorOutOfSpace.playerDataList = new PlayerDataList();
+		
+        // Load config file
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigFile.spec);
 	}
 
 	@SuppressWarnings({ "deprecation", "unchecked" })
@@ -127,6 +133,7 @@ public class ColorOutOfSpace {
 		RenderTypeLookup.setRenderLayer(BlockList.color_grass, RenderType.getCutout());
 		//RenderTypeLookup.setRenderLayer(BlockList.color_leaves_block, RenderType.getSolid());
     	RenderingRegistry.registerEntityRenderingHandler((EntityType<? extends AntiPlayerEntity>) EntityList.color_anti_player, new AntiPlayerRenderer.RenderFactory());
+    	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == 1 ? 1 : 0;
 	}
 	
 	private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -194,7 +201,6 @@ public class ColorOutOfSpace {
 	// SERVER
     public class onWorldTickListener {
         
-		@SuppressWarnings("unused")
 		@SubscribeEvent
         public void WorldTick(final WorldTickEvent event) {
 			
@@ -227,7 +233,7 @@ public class ColorOutOfSpace {
 							playerData.setMetFallen(false);
 							playerData.setFallDay(Refs.daysToFall + rand.nextInt(Refs.graceDaysToFall));
 							playerData.setMetActive(false);
-							if (Refs.limitCureTime || Refs.hardcoreMode) {
+							if (Refs.difficulty == Refs.HARDCORE) {
 								playerData.setPlayerInfected(false);
 								playerData.setCureLevel(0);
 								world.destroyBlock(playerData.getMetPos(), false);
@@ -371,7 +377,7 @@ public class ColorOutOfSpace {
 					if (spawnEntity.equals(EntityType.ZOGLIN)) {
 						chance = Refs.dupZoglinChance;
 					}
-					if (rand.nextInt(chance) == 0 || Refs.hardcoreMode) {
+					if (rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) {
 						Utils.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
 					}
 				}
