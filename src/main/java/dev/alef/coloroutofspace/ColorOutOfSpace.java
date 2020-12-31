@@ -35,7 +35,6 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -258,13 +257,11 @@ public class ColorOutOfSpace {
 			
 			if (!world.isRemote) {
 
-				Random rand = new Random();
 				BlockPos bedPos = new BlockPos(player.getPositionVec());
 				PlayerData playerData = ColorOutOfSpace.playerDataList.get(world, player);
 				
 				playerData.setBedPos(bedPos);
-				int offset = rand.nextInt(5) + 10;
-				playerData.setFallPos(bedPos.offset(Direction.byHorizontalIndex(rand.nextInt(3)), offset));
+				playerData.setFallPos(bedPos, true);
 			}
 		}
     }

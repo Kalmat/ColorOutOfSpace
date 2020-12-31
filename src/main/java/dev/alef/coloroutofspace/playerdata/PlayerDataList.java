@@ -121,7 +121,7 @@ public class PlayerDataList {
 					playerData.setBedPos(BlockPos.fromLong(Long.parseLong(data)));
 				} 
 				else if (prefix.equals("FP")) {
-					playerData.setFallPos(BlockPos.fromLong(Long.parseLong(data)));
+					playerData.setFallPos(BlockPos.fromLong(Long.parseLong(data)), false);
 				}
 				else if (prefix.equals("FJ")) {
 					playerData.setFirstJoin(Long.parseLong(data));

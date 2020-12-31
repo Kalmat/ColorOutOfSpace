@@ -41,7 +41,7 @@ public class MeteoriteBlock extends Block {
 				worldIn.destroyBlock(playerData.getMetPos(), false);
 			}
 			worldIn.destroyBlock(pos, false);
-			playerData.setFallPos(pos);
+			playerData.setFallPos(pos, false);
 			MetBot metBot = new MetBot();
 			metBot.metFall(worldIn, (PlayerEntity) placer, playerData);
 		}

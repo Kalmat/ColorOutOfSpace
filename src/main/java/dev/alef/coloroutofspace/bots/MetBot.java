@@ -42,10 +42,7 @@ public class MetBot {
 	public void metFall(World worldIn, PlayerEntity player, PlayerData playerData) {
 
 		if (playerData.getFallPos() == null) {
-			Random rand1 = new Random();
-			Random rand2 = new Random();
-			int offset = rand1.nextInt(10) + 5;
-			playerData.setFallPos(new BlockPos(player.getPositionVec()).offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
+			playerData.setFallPos(new BlockPos(player.getPositionVec()), true);
 		}
 		BlockPos pos = playerData.getFallPos();
 		

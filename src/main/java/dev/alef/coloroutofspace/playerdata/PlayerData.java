@@ -1,11 +1,13 @@
 package dev.alef.coloroutofspace.playerdata;
 
+import java.util.Random;
 import java.util.UUID;
 
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketCured;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -32,7 +34,7 @@ public class PlayerData {
 		this.currentPlayerUUID = player.getUniqueID();
 		this.setMetPos(null);
 		this.setBedPos(null);
-		this.setFallPos(null);
+		this.setFallPos(null, false);
 		this.setFallDay(-1);
 		this.setMetFallen(false);
 		this.setPlayerInfected(false);
@@ -123,8 +125,14 @@ public class PlayerData {
 		return fallPos;
 	}
 
-	public void setFallPos(BlockPos fallPos) {
-		this.fallPos = fallPos;
+	public void setFallPos(BlockPos pos, boolean randomize) {
+		if (randomize && fallPos != null) {
+			Random rand1 = new Random();
+			Random rand2 = new Random();
+			int offset = rand1.nextInt(10) + 5;
+			pos = new BlockPos(pos.offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
+		}
+		this.fallPos = pos;
 	}
 
 	public int getFallDay() {
@@ -149,7 +157,7 @@ public class PlayerData {
 			this.getWorld().destroyBlock(this.getMetPos(), false);
 		}
 		this.setMetPos(null);
-		this.setFallPos(null);
+		this.setFallPos(null, false);
 		this.setFallDay(-1);
 		this.setMetFallen(false);
 		this.setPlayerInfected(false);
