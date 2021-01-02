@@ -1,21 +1,17 @@
 package dev.alef.coloroutofspace.playerdata;
 
 import java.util.Random;
-import java.util.UUID;
 
+import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketCured;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
-public class PlayerData {
+public class PlayerData implements IPlayerData {
 	
-	private World currentWorld;
-	private PlayerEntity currentPlayer;
-	private UUID currentPlayerUUID;
 	private BlockPos metPos;
 	private BlockPos bedPos;
 	private BlockPos fallPos;
@@ -28,14 +24,11 @@ public class PlayerData {
 	private int prevRadius;
 	private int cureLevel;
 	
-	PlayerData(World worldIn, PlayerEntity player) {
-		this.currentWorld = worldIn;
-		this.currentPlayer = player;
-		this.currentPlayerUUID = player.getUniqueID();
+	public PlayerData() {
 		this.setMetPos(null);
 		this.setBedPos(null);
 		this.setFallPos(null, false);
-		this.setFallDay(-1);
+		this.setFallDay(-1, false);
 		this.setMetFallen(false);
 		this.setPlayerInfected(false);
 		this.setPlayerCured(false);
@@ -43,18 +36,6 @@ public class PlayerData {
 		this.setPrevRadius(0);
 		this.setFirstJoin(0);
 		this.setCureLevel(0);
-	}
-	
-	public World getWorld() {
-		return this.currentWorld;
-	}
-	
-	public PlayerEntity getPlayer() {
-		return this.currentPlayer;
-	}
-	
-	public UUID getPlayerUUID() {
-		return this.currentPlayerUUID;
 	}
 	
 	public BlockPos getMetPos() {
@@ -139,8 +120,9 @@ public class PlayerData {
 		return fallDay;
 	}
 
-	public void setFallDay(int fallDay) {
-		this.fallDay = fallDay;
+	public void setFallDay(int fallDay, boolean randomize) {
+		Random rand = new Random();
+		this.fallDay = fallDay + rand.nextInt(Refs.graceDaysToFall);
 	}
 
 	public int getCureLevel() {
@@ -151,14 +133,14 @@ public class PlayerData {
 		this.cureLevel = cureLevel;
 	}
 
-	public void reset(boolean destroyMet) {
+	public void reset(PlayerEntity player, boolean destroyMet) {
 		
 		if (destroyMet && this.getMetPos() != null) {
-			this.getWorld().destroyBlock(this.getMetPos(), false);
+			player.world.destroyBlock(this.getMetPos(), false);
 		}
 		this.setMetPos(null);
 		this.setFallPos(null, false);
-		this.setFallDay(-1);
+		this.setFallDay(-1, false);
 		this.setMetFallen(false);
 		this.setPlayerInfected(false);
 		this.setPlayerCured(false);
@@ -166,6 +148,28 @@ public class PlayerData {
 		this.setPrevRadius(0);
 		this.setFirstJoin(0);
 		this.setCureLevel(0);
-		Networking.sendToClient(new PacketCured(this.currentPlayerUUID), (ServerPlayerEntity) this.currentPlayer);
+		Networking.sendToClient(new PacketCured(player.getUniqueID()), (ServerPlayerEntity) player);
 	}
+	
+    public static IPlayerData getFromPlayer(PlayerEntity player){
+        return player
+                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap,null)
+                .orElseThrow(()->new IllegalArgumentException("LazyOptional must be not empty!"));
+    }
+
+    @Override
+    public void copyForRespawn(IPlayerData deadPlayer){
+
+        this.setMetPos(deadPlayer.getMetPos());
+        this.setBedPos(deadPlayer.getBedPos());
+        this.setFallPos(deadPlayer.getFallPos(), false);
+        this.setFirstJoin(deadPlayer.getFirstJoin());
+        this.setFallDay(deadPlayer.getFallDay(), false);
+        this.setMetFallen(deadPlayer.isMetFallen());
+        this.setPlayerInfected(deadPlayer.isPlayerInfected());
+        this.setMetActive(deadPlayer.isMetActive());
+        this.setPrevRadius(deadPlayer.getPrevRadius());
+        this.setCureLevel(deadPlayer.getCureLevel());
+        this.setPlayerCured(deadPlayer.isPlayerCured());
+    }
 }

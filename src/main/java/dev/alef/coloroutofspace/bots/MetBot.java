@@ -5,11 +5,12 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.Utils;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketCured;
-import dev.alef.coloroutofspace.playerdata.PlayerData;
+import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -39,8 +40,10 @@ public class MetBot {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void metFall(World worldIn, PlayerEntity player, PlayerData playerData) {
+	public void metFall(World worldIn, PlayerEntity player) {
 
+		IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+		
 		if (playerData.getFallPos() == null) {
 			playerData.setFallPos(new BlockPos(player.getPositionVec()), true);
 		}
@@ -65,15 +68,16 @@ public class MetBot {
 		playerData.setMetFallen(true);
 		playerData.setMetActive(true);
 		playerData.setMetPos(pos);
-		playerData.setFallDay(-1);
+		playerData.setFallDay(-1, false);
 		playerData.setPlayerCured(false);
 		if (Refs.difficulty == Refs.HARDCORE) {
 			playerData.setPlayerInfected(false);
-			Networking.sendToClient(new PacketCured(playerData.getPlayerUUID()), (ServerPlayerEntity) playerData.getPlayer());
+			Networking.sendToClient(new PacketCured(player.getUniqueID()), (ServerPlayerEntity) player);
 			playerData.setCureLevel(0);
 		}
 		this.increaseInfectedArea(worldIn, player, playerData.getMetPos(), 0, Refs.radiusIncrease);
 		playerData.setPrevRadius(Refs.radiusIncrease);
+		//ColorOutOfSpace.writePlayerData(player);
 	}
 	
 	public void increaseInfectedArea(World worldIn, PlayerEntity player, BlockPos center, int prevRadius, int radius) {

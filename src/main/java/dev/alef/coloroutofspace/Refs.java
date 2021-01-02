@@ -14,8 +14,6 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.DimensionType;
 
 public class Refs {
 	
@@ -25,13 +23,13 @@ public class Refs {
 	
 	public static int difficulty = Refs.NORMAL;
 	public static int NORMAL = 0;
-	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to only while Meteorite is Active - Entities will ALWAYS duplicate
+	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to while Meteorite is Active - Aggressive entities will ALWAYS duplicate
 	public static int HARDCORE = 1;
 	
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 500; // 24000 = one day (clock not increasing when sleeping)
+	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing when sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;
@@ -42,13 +40,8 @@ public class Refs {
 	public static final int enchantabilityChance = 2; // 1/x Chance (1 = 100%, 2 = 50%, ...)
 	public static final boolean spawnDefaultLootEntity = true;
 	public static final int spawnDefaultLootChance = 4; // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final int dupEntityChance = 2;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final int dupZoglinChance = 5;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final EntityType<?> defaultLootEntity = EntityType.SILVERFISH;
-	
-	public static final ResourceLocation overworld = DimensionType.OVERWORLD_ID;
-	public static final ResourceLocation the_nether = DimensionType.THE_NETHER_ID;
-	public static final ResourceLocation the_end = DimensionType.THE_END_ID;
+	public static final int dupEntityChance = 1;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int dupAggressiveChance = 5;  // 1/x Chance (1 = 100%, 2 = 50%, ...) - For Zoglins, Guardians and Elder Guardians
 	
 	public static final BlockState meteoriteState = BlockList.color_meteorite_block.getDefaultState();
 	public static final BlockState infectedState = BlockList.color_infected_block.getDefaultState();
@@ -65,6 +58,8 @@ public class Refs {
 	public static final BlockState infectedGlassPaneState = Blocks.PURPLE_STAINED_GLASS_PANE.getDefaultState();
 	public static final BlockState infectedTorchState = Blocks.REDSTONE_TORCH.getDefaultState();
 	public static final BlockState infectedWallTorchState = Blocks.REDSTONE_WALL_TORCH.getDefaultState();
+	
+	public static final EntityType<?> defaultLootEntity = EntityType.SILVERFISH;
 	
 	public static final Color glintColor = new Color(1.0f, 0.3f, 0.7f, 0.1f); //0xFF33E0FB?
 	public static final Color waterColor = new Color(0x62529E); // end-water color
@@ -119,7 +114,6 @@ public class Refs {
 			Blocks.DIRT,
 			Blocks.COARSE_DIRT,
 			Blocks.GRASS_BLOCK,
-			Blocks.GRASS_PATH,
 			Blocks.PODZOL,
 			Blocks.MYCELIUM
 	);
@@ -283,15 +277,23 @@ public class Refs {
 	public static final List<EntityType<?>> infectedDupEntities = Arrays.asList(
 			EntityType.HUSK,
 			EntityType.field_242287_aj, // PIGLIN BRUTE
+			EntityType.PIGLIN,
 			EntityType.ZOGLIN,
 			EntityType.SHULKER,
 			EntityType.GHAST,
 			EntityType.MAGMA_CUBE,
 			EntityType.ZOMBIE_HORSE,
+			EntityType.SKELETON_HORSE,
 			EntityType.STRIDER,
 			EntityType.ENDERMITE,
 			EntityType.BLAZE, 
 			EntityType.VEX
+	);
+	
+	public static final List<EntityType<?>> aggressiveEntities = Arrays.asList(
+			EntityType.ZOGLIN,
+			EntityType.GUARDIAN,
+			EntityType.ELDER_GUARDIAN
 	);
 
 	public static final int alignUp = 0;

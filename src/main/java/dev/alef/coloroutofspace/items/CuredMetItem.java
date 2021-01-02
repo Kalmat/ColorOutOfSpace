@@ -8,7 +8,7 @@ import dev.alef.coloroutofspace.Utils;
 import dev.alef.coloroutofspace.bots.MetBot;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketCured;
-import dev.alef.coloroutofspace.playerdata.PlayerData;
+import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -50,11 +50,11 @@ public class CuredMetItem extends Item {
       }
       
       if (!worldIn.isRemote) {
-     	  PlayerData playerData = ColorOutOfSpace.playerDataList.get(worldIn, (PlayerEntity)entityLiving);
+    	  IPlayerData playerData = ColorOutOfSpace.getPlayerData((PlayerEntity)entityLiving);
 	      playerData.setPlayerCured(true);
 	      playerData.setPlayerInfected(false);
 	      playerData.setMetActive(false);
-	      Networking.sendToClient(new PacketCured(playerData.getPlayerUUID()), (ServerPlayerEntity) playerData.getPlayer());
+	      Networking.sendToClient(new PacketCured(((PlayerEntity)entityLiving).getUniqueID()), (ServerPlayerEntity) entityLiving);
 	      
 	      Utils.spawnMetSword(worldIn, (PlayerEntity)entityLiving, true);
 	      
