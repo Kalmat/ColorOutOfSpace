@@ -3,12 +3,12 @@ package dev.alef.coloroutofspace.items;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.Utils;
 import dev.alef.coloroutofspace.bots.MetBot;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketCured;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
+import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -50,7 +50,7 @@ public class CuredMetItem extends Item {
       }
       
       if (!worldIn.isRemote) {
-    	  IPlayerData playerData = ColorOutOfSpace.getPlayerData((PlayerEntity)entityLiving);
+    	  IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity)entityLiving);
 	      playerData.setPlayerCured(true);
 	      playerData.setPlayerInfected(false);
 	      playerData.setMetActive(false);

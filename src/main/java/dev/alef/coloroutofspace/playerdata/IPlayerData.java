@@ -1,6 +1,5 @@
 package dev.alef.coloroutofspace.playerdata;
 
-
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 

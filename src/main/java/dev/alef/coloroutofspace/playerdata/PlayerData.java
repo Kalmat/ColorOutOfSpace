@@ -25,27 +25,27 @@ public class PlayerData implements IPlayerData {
 	private int cureLevel;
 	
 	public PlayerData() {
-		this.setMetPos(null);
+		this.setFirstJoin(0);
 		this.setBedPos(null);
-		this.setFallPos(null, false);
 		this.setFallDay(-1, false);
+		this.setFallPos(null, false);
+		this.setMetPos(null);
 		this.setMetFallen(false);
-		this.setPlayerInfected(false);
-		this.setPlayerCured(false);
 		this.setMetActive(false);
 		this.setPrevRadius(0);
-		this.setFirstJoin(0);
+		this.setPlayerInfected(false);
 		this.setCureLevel(0);
+		this.setPlayerCured(false);
 	}
 	
-	public BlockPos getMetPos() {
-		return this.metPos;
+	public long getFirstJoin() {
+		return this.firstJoin;
 	}
 
-	public void setMetPos(BlockPos metPos) {
-		this.metPos = metPos;
+	public void setFirstJoin(long first) {
+		this.firstJoin = first;
 	}
-
+	
 	public BlockPos getBedPos() {
 		return bedPos;
 	}
@@ -54,28 +54,43 @@ public class PlayerData implements IPlayerData {
 		this.bedPos = bedPos;
 	}
 
+	public int getFallDay() {
+		return fallDay;
+	}
+
+	public void setFallDay(int fallDay, boolean randomize) {
+		Random rand = new Random();
+		this.fallDay = fallDay + rand.nextInt(Refs.graceDaysToFall);
+	}
+
+	public BlockPos getFallPos() {
+		return fallPos;
+	}
+
+	public void setFallPos(BlockPos pos, boolean randomize) {
+		if (randomize && fallPos != null) {
+			Random rand1 = new Random();
+			Random rand2 = new Random();
+			int offset = rand1.nextInt(10) + 5;
+			pos = new BlockPos(pos.offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
+		}
+		this.fallPos = pos;
+	}
+
+	public BlockPos getMetPos() {
+		return this.metPos;
+	}
+
+	public void setMetPos(BlockPos metPos) {
+		this.metPos = metPos;
+	}
+
 	public void setMetFallen(boolean fallen) {
 		this.metFallen = fallen;
 	}
 	
 	public boolean isMetFallen() {
 		return this.metFallen;
-	}
-
-	public boolean isPlayerInfected() {
-		return playerInfected;
-	}
-
-	public void setPlayerInfected(boolean playerInfected) {
-		this.playerInfected = playerInfected;
-	}
-
-	public boolean isPlayerCured() {
-		return playerCured;
-	}
-
-	public void setPlayerCured(boolean playerCured) {
-		this.playerCured = playerCured;
 	}
 
 	public boolean isMetActive() {
@@ -94,35 +109,12 @@ public class PlayerData implements IPlayerData {
 		this.prevRadius = prevRadius;
 	}
 
-	public long getFirstJoin() {
-		return this.firstJoin;
+	public boolean isPlayerInfected() {
+		return playerInfected;
 	}
 
-	public void setFirstJoin(long first) {
-		this.firstJoin = first;
-	}
-	
-	public BlockPos getFallPos() {
-		return fallPos;
-	}
-
-	public void setFallPos(BlockPos pos, boolean randomize) {
-		if (randomize && fallPos != null) {
-			Random rand1 = new Random();
-			Random rand2 = new Random();
-			int offset = rand1.nextInt(10) + 5;
-			pos = new BlockPos(pos.offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
-		}
-		this.fallPos = pos;
-	}
-
-	public int getFallDay() {
-		return fallDay;
-	}
-
-	public void setFallDay(int fallDay, boolean randomize) {
-		Random rand = new Random();
-		this.fallDay = fallDay + rand.nextInt(Refs.graceDaysToFall);
+	public void setPlayerInfected(boolean playerInfected) {
+		this.playerInfected = playerInfected;
 	}
 
 	public int getCureLevel() {
@@ -133,42 +125,50 @@ public class PlayerData implements IPlayerData {
 		this.cureLevel = cureLevel;
 	}
 
+	public boolean isPlayerCured() {
+		return playerCured;
+	}
+
+	public void setPlayerCured(boolean playerCured) {
+		this.playerCured = playerCured;
+	}
+
 	public void reset(PlayerEntity player, boolean destroyMet) {
 		
 		if (destroyMet && this.getMetPos() != null) {
 			player.world.destroyBlock(this.getMetPos(), false);
 		}
-		this.setMetPos(null);
+		this.setFirstJoin(0);
 		this.setFallPos(null, false);
 		this.setFallDay(-1, false);
+		this.setMetPos(null);
 		this.setMetFallen(false);
-		this.setPlayerInfected(false);
-		this.setPlayerCured(false);
 		this.setMetActive(false);
 		this.setPrevRadius(0);
-		this.setFirstJoin(0);
+		this.setPlayerInfected(false);
 		this.setCureLevel(0);
+		this.setPlayerCured(false);
 		Networking.sendToClient(new PacketCured(player.getUniqueID()), (ServerPlayerEntity) player);
 	}
 	
-    public static IPlayerData getFromPlayer(PlayerEntity player){
+    public static IPlayerData getFromPlayer(PlayerEntity player) {
         return player
-                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap,null)
+                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap, null)
                 .orElseThrow(()->new IllegalArgumentException("LazyOptional must be not empty!"));
     }
 
     @Override
     public void copyForRespawn(IPlayerData deadPlayer){
 
-        this.setMetPos(deadPlayer.getMetPos());
+        this.setFirstJoin(deadPlayer.getFirstJoin());
         this.setBedPos(deadPlayer.getBedPos());
         this.setFallPos(deadPlayer.getFallPos(), false);
-        this.setFirstJoin(deadPlayer.getFirstJoin());
         this.setFallDay(deadPlayer.getFallDay(), false);
+        this.setMetPos(deadPlayer.getMetPos());
         this.setMetFallen(deadPlayer.isMetFallen());
-        this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setMetActive(deadPlayer.isMetActive());
         this.setPrevRadius(deadPlayer.getPrevRadius());
+        this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setCureLevel(deadPlayer.getCureLevel());
         this.setPlayerCured(deadPlayer.isPlayerCured());
     }

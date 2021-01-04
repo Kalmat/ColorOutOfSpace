@@ -14,6 +14,7 @@ import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
+import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
@@ -63,7 +64,7 @@ public class Utils {
     	if (entityIn instanceof PlayerEntity) {
     		
     		PlayerEntity player = (PlayerEntity) entityIn;
-			IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+			IPlayerData playerData = PlayerData.getFromPlayer(player);
 			Utils.applyInfectedEffects(player, true);
 			if (!playerData.isPlayerInfected()) {
 				playerData.setPlayerInfected(true);

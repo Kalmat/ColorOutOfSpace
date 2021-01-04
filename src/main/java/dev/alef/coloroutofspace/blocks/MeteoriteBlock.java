@@ -7,12 +7,11 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.Utils;
 import dev.alef.coloroutofspace.bots.CalcVector;
 import dev.alef.coloroutofspace.bots.MetBot;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
-import dev.alef.coloroutofspace.playerdata.PlayerDataProvider;
+import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -37,14 +36,13 @@ public class MeteoriteBlock extends Block {
 		
 		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking())) {
 
-			IPlayerData playerData = PlayerDataProvider.ColorOutOfSpaceStateCap.getDefaultInstance();
+			IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) placer);
 
 			if (playerData.getMetPos() != null) {
 				worldIn.destroyBlock(playerData.getMetPos(), false);
 			}
 			worldIn.destroyBlock(pos, false);
 			playerData.setFallPos(pos, false);
-			//ColorOutOfSpace.writePlayerData((PlayerEntity)placer);
 			
 			MetBot metBot = new MetBot();
 			metBot.metFall(worldIn, (PlayerEntity) placer);
@@ -56,7 +54,7 @@ public class MeteoriteBlock extends Block {
     public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)  {
 
 		if (!worldIn.isRemote && !player.isSneaking()) {
-			IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+			IPlayerData playerData = PlayerData.getFromPlayer(player);
 			playerData.reset(player, false);
 		}
 		super.onBlockHarvested(worldIn, pos, state, player);

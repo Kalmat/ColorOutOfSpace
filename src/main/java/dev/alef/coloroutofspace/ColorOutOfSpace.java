@@ -1,14 +1,11 @@
 package dev.alef.coloroutofspace;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import dev.alef.coloroutofspace.entities.AntiPlayerEntity;
 import dev.alef.coloroutofspace.entities.renderers.AntiPlayerRenderer;
@@ -45,7 +42,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
@@ -167,14 +163,14 @@ public class ColorOutOfSpace {
     public class onPlayerLoggedInListener {
         
 		@SubscribeEvent
-        public void PlayerLogIn(final PlayerLoggedInEvent event) throws FileNotFoundException, CommandSyntaxException {
+        public void PlayerLogIn(final PlayerLoggedInEvent event) {
 			
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
 
 			if (!world.isRemote) {
 				
-				IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
 
 				if (playerData.getFirstJoin() == 0L) {
 					playerData.reset(player, true);
@@ -198,14 +194,14 @@ public class ColorOutOfSpace {
     public class onPlayerRespawnListener {
         
 		@SubscribeEvent
-        public void PlayerRespawn(final PlayerRespawnEvent event) throws FileNotFoundException, CommandSyntaxException {
+        public void PlayerRespawn(final PlayerRespawnEvent event) {
 			
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
 
 			if (!world.isRemote) {
 
-				IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
 				
 				if (playerData.isPlayerInfected()) {
 					Utils.applyInfectedEffects(player, false);
@@ -219,7 +215,7 @@ public class ColorOutOfSpace {
     public class onPlayerCloneListener {
         
 		@SubscribeEvent
-        public void PlayerClone(final PlayerEvent.Clone event) throws FileNotFoundException, CommandSyntaxException {
+        public void PlayerClone(final PlayerEvent.Clone event) {
 			
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
@@ -230,7 +226,7 @@ public class ColorOutOfSpace {
 			        player = (PlayerEntity) event.getPlayer();
 			        ColorOutOfSpace.playerData.copyForRespawn(ColorOutOfSpace.playerData);
 				} 
-				IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
 				if (playerData.isPlayerInfected()) {
 					Utils.applyInfectedEffects(player, false);
 				}
@@ -253,7 +249,7 @@ public class ColorOutOfSpace {
 
 				for (PlayerEntity player : world.getPlayers()) {
 					
-					IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+					IPlayerData playerData = PlayerData.getFromPlayer(player);
 
 					if (playerData.isMetFallen() && playerData.isMetActive()) {
 
@@ -303,7 +299,7 @@ public class ColorOutOfSpace {
 			if (!world.isRemote) {
 
 				BlockPos bedPos = new BlockPos(player.getPositionVec());
-				IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
 				
 				playerData.setBedPos(bedPos);
 				playerData.setFallPos(bedPos, true);
@@ -311,7 +307,7 @@ public class ColorOutOfSpace {
 		}
     }
     
-	// CLIENT & SERVER
+ 	// CLIENT & SERVER
     public class onPlayerWakeUpListener {
         
 		@SubscribeEvent
@@ -322,7 +318,7 @@ public class ColorOutOfSpace {
 			
 			if (!world.isRemote) {
 
-				IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
 				
 				if ((playerData.getFallDay() == 0 && !playerData.isMetFallen() && !playerData.isPlayerCured()) && (!playerData.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE)) {
 					MetBot metBot = new MetBot();
@@ -344,18 +340,21 @@ public class ColorOutOfSpace {
 				
 				if (event.getSource().getTrueSource() instanceof PlayerEntity) {
 
-					IPlayerData playerData = ColorOutOfSpace.getPlayerData(playerAttacked);
+					IPlayerData playerData = PlayerData.getFromPlayer(playerAttacked);
 					PlayerEntity playerAttacking = (PlayerEntity) event.getSource().getTrueSource();
 
 					if (playerData.isPlayerInfected()) {
 						playerAttacking.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
 					}
 
-					playerData = ColorOutOfSpace.getPlayerData(playerAttacking);
+					playerData = PlayerData.getFromPlayer(playerAttacking);
 					
 					if (playerData.isPlayerInfected()) {
 						playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
 					}
+				}
+				else if (event.getSource().getTrueSource() instanceof AntiPlayerEntity && Refs.difficulty == Refs.HARDCORE) {
+					playerAttacked.addPotionEffect(new EffectInstance(Effects.POISON, 100));
 				}
 			}
 		}
@@ -367,7 +366,7 @@ public class ColorOutOfSpace {
 	    @SubscribeEvent
         public void onHitEntity(AttackEntityEvent event) {
         	
-        	Entity target = event.getTarget();
+	    	Entity target = event.getTarget();
         	PlayerEntity player = (PlayerEntity) event.getPlayer();
         	
         	Item itemInMainHand = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND).getStack().getItem();
@@ -392,7 +391,7 @@ public class ColorOutOfSpace {
 
 				if (attacker instanceof PlayerEntity && Refs.souls.contains(entity.getType())) {
 						
-					IPlayerData playerData = ColorOutOfSpace.getPlayerData((PlayerEntity)attacker);
+					IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) attacker);
 					
 					if (playerData.isPlayerInfected() && playerData.isMetActive()) {
 
@@ -432,7 +431,7 @@ public class ColorOutOfSpace {
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
 			
-			IPlayerData playerData = ColorOutOfSpace.getPlayerData(player);
+			IPlayerData playerData = PlayerData.getFromPlayer(player);
 			
     		if (playerData != null && playerData.isPlayerInfected()) {
     			world.destroyBlock(event.getPos(), false);
@@ -447,15 +446,5 @@ public class ColorOutOfSpace {
 		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
 	    	ColorOutOfSpaceRender.showText(event.getMatrixStack());
 		}
-	}
-	
-	public static IPlayerData getPlayerData(PlayerEntity player) {
-
-		if (!player.world.isRemote()) {
-			Capability<IPlayerData> cap = PlayerDataProvider.ColorOutOfSpaceStateCap;
-			ColorOutOfSpace.playerData = cap.getDefaultInstance();
-			player.getCapability(cap, null).ifPresent(state -> ColorOutOfSpace.playerData = state);
-		}
-		return ColorOutOfSpace.playerData;
 	}
 }
