@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.bots;
+package dev.alef.coloroutofspace.bot;
 
 import java.util.ArrayList;
 import java.util.List;

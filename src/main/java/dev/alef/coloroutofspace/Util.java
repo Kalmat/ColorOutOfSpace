@@ -16,6 +16,7 @@ import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -41,6 +42,7 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
@@ -51,7 +53,7 @@ import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class Utils {
+public class Util {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
@@ -61,14 +63,14 @@ public class Utils {
 	
 	public static void infect(World worldIn, BlockPos pos, Entity entityIn) {
 		
-    	if (entityIn instanceof PlayerEntity) {
+		if (entityIn instanceof PlayerEntity) {
     		
     		PlayerEntity player = (PlayerEntity) entityIn;
 			IPlayerData playerData = PlayerData.getFromPlayer(player);
-			Utils.applyInfectedEffects(player, true);
+			Util.applyInfectedEffects(player, playerData.getCureLevel(), true);
 			if (!playerData.isPlayerInfected()) {
 				playerData.setPlayerInfected(true);
-				Utils.spawnAntiPlayer((ServerWorld)worldIn, player, playerData.getMetPos().up());
+				Util.spawnAntiPlayer((ServerWorld) worldIn, player, playerData.getMetPos().up());
 			}
     	}
     	else if (entityIn instanceof LivingEntity) {
@@ -79,19 +81,19 @@ public class Utils {
 				
 				((LivingEntity) entityIn).setGlowing(true);
 				((LivingEntity) entityIn).addPotionEffect(new EffectInstance(Effects.INSTANT_DAMAGE, Refs.timeIncrease));
-				Entity spawnedEntity = Utils.spawnEntity(worldIn, null, new BlockPos(entityIn.getPositionVec()).up(), Refs.infectedEntities.get(i), true, null);
+				Entity spawnedEntity = Util.spawnEntity(worldIn, null, new BlockPos(entityIn.getPositionVec()).up(), Refs.infectedEntities.get(i), true, null);
 				spawnedEntity.setGlowing(true);
 			}
 			else if (Refs.difficulty == Refs.HARDCORE && entityIn instanceof MonsterEntity && !entityIn.hasCustomName()) {
 				entityIn.setGlowing(true);
-				Utils.applyPersistence(entityIn, null);
+				Util.applyPersistence(entityIn, null);
 				// Even more hardcore: turn them all into ZOGLINGS!!!! (but think what to do with the AntiPlayer... spawn jailed right on top of the meteorite?)
 			}
     	}
 	}
 	
 	public static LivingEntity spawnAntiPlayer(ServerWorld worldIn, PlayerEntity player, BlockPos pos) {
-		Entity spawnedEntity = Utils.spawnEntity(worldIn, null, pos, EntityList.color_anti_player, true, "Evil "+player.getScoreboardName());
+		Entity spawnedEntity = Util.spawnEntity(worldIn, null, pos, EntityList.color_anti_player, true, "Evil "+player.getScoreboardName());
 		for (ItemStack armor : player.getEquipmentAndArmor()) {
 			if (armor != null && !armor.equals(ItemStack.EMPTY)) {
 				spawnedEntity.setItemStackToSlot(MobEntity.getSlotForItemStack(armor), armor);
@@ -104,18 +106,18 @@ public class Utils {
 		return (LivingEntity) spawnedEntity;
 	}
 	
-	public static void applyInfectedEffects(PlayerEntity player, boolean firstTime) {
+	public static void applyInfectedEffects(PlayerEntity player, int cureLevel, boolean firstTime) {
 		
-		Networking.sendToClient(new PacketInfected(player.getUniqueID()), (ServerPlayerEntity) player);
+		Networking.sendToClient(new PacketInfected(true, cureLevel), (ServerPlayerEntity) player);
 		if (firstTime) {
-			player.addPotionEffect(new EffectInstance(Effects.POISON, 300));
-			player.setGlowing(true);
+			player.addPotionEffect(new EffectInstance(Effects.POISON, 200));
 		}
+		player.setGlowing(true);
 		player.addPotionEffect(new EffectInstance(Effects.BAD_OMEN, Refs.timeIncrease));
 	}
 
 	public static ItemStack getPotion(World worldIn, PlayerEntity player, BlockPos pos, Item potionItem) {
-        Potion potion = Utils.getRandomPotion();
+        Potion potion = Util.getRandomPotion();
         PotionEntity potionentity = new PotionEntity(worldIn, pos.getX(), pos.getY(), pos.getZ());
         potionentity.setItem(PotionUtils.addPotionToItemStack(new ItemStack(potionItem), potion));
         ItemStack stack = potionentity.getItem();
@@ -129,7 +131,7 @@ public class Utils {
 		BlockPos structPos = null;
 		String structName = "Surroundings Map";
 		List<Object> retValues = new ArrayList<Object>();
-		retValues = Utils.getRandomStructure(worldIn, pos, 96);
+		retValues = Util.getRandomStructure(worldIn, pos, 96);
 		structPos = (BlockPos) retValues.get(0);
 
 		if (structPos != null) {
@@ -148,7 +150,7 @@ public class Utils {
 		}
 		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
 		if (applyPersistence) {
-			Utils.applyPersistence(spawnedEntity, name);
+			Util.applyPersistence(spawnedEntity, name);
 		}
 		return spawnedEntity;
 	}
@@ -173,6 +175,19 @@ public class Utils {
 		}
 	}
 	
+	public static void dupEntity(World worldIn, @Nullable PlayerEntity player, BlockPos pos, Entity attacker, LivingEntity entity, boolean applyPersistence, @Nullable String name) {
+		
+		Random rand = new Random();
+		EntityType<?> spawnEntity = attacker.getType();
+		int chance = Refs.dupEntityChance;
+		if (Refs.aggressiveEntities.contains(spawnEntity)) {
+			chance = Refs.dupAggressiveChance;
+		}
+		if (rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) {
+			Util.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
+		}
+	}
+	
 	public static void spawnFluid(World worldIn, PlayerEntity player, BlockPos pos, Fluid spawnBlock) {
 		worldIn.setBlockState(pos.up(), spawnBlock.getDefaultState().getBlockState(), 11);
 	}
@@ -182,16 +197,16 @@ public class Utils {
 		ItemStack stack = new ItemStack(spawnItem);
 
 		if (spawnItem.equals(Items.POTION) || spawnItem.equals(Items.SPLASH_POTION)) {
-			stack  = Utils.getPotion(worldIn, player, pos, spawnItem);
+			stack  = Util.getPotion(worldIn, player, pos, spawnItem);
 		}
 		else if (spawnItem.equals(Items.MAP)) {
-			stack = Utils.getMap(worldIn, player, pos, spawnItem);
+			stack = Util.getMap(worldIn, player, pos, spawnItem);
 		}
 		else if (spawnItem.equals(Items.BOOK) && (enchantBooks || enchantAll)) {
-			stack = Utils.enchantItem(worldIn, player, pos, spawnItem, 1);
+			stack = Util.enchantItem(worldIn, player, pos, spawnItem, 1);
 		}
 		else if (stack.isEnchantable() && enchantAll) {
-			stack = Utils.enchantItem(worldIn, player, pos, spawnItem, enchantChance);
+			stack = Util.enchantItem(worldIn, player, pos, spawnItem, enchantChance);
 		}
 		ItemEntity spawnItemEntity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
 		spawnItemEntity.entityDropItem(stack);
@@ -203,7 +218,7 @@ public class Utils {
 		ItemStack stack = new ItemStack(enchantItem);
 		
 		if (stack != null && !stack.equals(ItemStack.EMPTY) && stack.isEnchantable() && rand.nextInt(enchantChance) == 0) {
-			Enchantment ench = Utils.getRandomEnchantment(stack);
+			Enchantment ench = Util.getRandomEnchantment(stack);
 			if (ench != null) {
 				stack.addEnchantment(ench, rand.nextInt(ench.getMaxLevel()) + 1);
 			}
@@ -224,9 +239,9 @@ public class Utils {
 	public static Potion getRandomPotion() {
 		
 		Random rand = new Random();
-		int randNum = rand.nextInt(Utils.potions.size());
+		int randNum = rand.nextInt(Util.potions.size());
 
-		return Utils.potions.get(randNum);
+		return Util.potions.get(randNum);
 	}
 	
 	public static Enchantment getRandomEnchantment(ItemStack stack) {
@@ -238,9 +253,9 @@ public class Utils {
 		Enchantment ench1 = null;
 		
 		if (item.isEnchantable(stack)) {
-			for (int i= 0; i < Utils.enchantments.size(); ++i) {
-				randNum = rand.nextInt(Utils.enchantments.size());
-				ench1 =  Utils.enchantments.get(randNum);
+			for (int i= 0; i < Util.enchantments.size(); ++i) {
+				randNum = rand.nextInt(Util.enchantments.size());
+				ench1 =  Util.enchantments.get(randNum);
 				if ((item.equals(Items.BOOK) && ench1.isAllowedOnBooks()) ||
 						(!item.equals(Items.BOOK) && ench1.canApply(stack))) {
 					ench = ench1;
@@ -260,9 +275,9 @@ public class Utils {
 		retValues.add("");
 		int randNum = 0;
 		
-		for (int i= 0; i < Utils.structures.size(); ++i) {
-			randNum = rand.nextInt(Utils.structures.size());
-			struct = Utils.structures.get(randNum);
+		for (int i= 0; i < Util.structures.size(); ++i) {
+			randNum = rand.nextInt(Util.structures.size());
+			struct = Util.structures.get(randNum);
 			if (struct != null) {
 				retValues.set(0, ((ServerWorld) worldIn).func_241117_a_(struct, pos, radius, false));
 				retValues.set(1, struct.getStructureName());
@@ -280,13 +295,19 @@ public class Utils {
 		
 		for (Property<?> prop : properties) {
 			try {
-				targetState = targetState.with(Utils.convertInstanceOfObject(prop, prop.getClass()), Utils.convertInstanceOfObject(stateToClone.getValues().get(prop), stateToClone.getValues().get(prop).getClass()));
+				targetState = targetState.with(Util.convertInstanceOfObject(prop, prop.getClass()), Util.convertInstanceOfObject(stateToClone.getValues().get(prop), stateToClone.getValues().get(prop).getClass()));
 			}
 			catch(Exception e) {
 				LOGGER.info("Property can not be applied to target state "+prop.getName());
 			}
 		}
 		return targetState;
+	}
+	
+	public static ResourceLocation cloneSkin(World worldIn, PlayerEntity player, Entity mob, BlockPos pos) {
+		Minecraft mc = Minecraft.getInstance();
+		ResourceLocation skin1 = mc.player.getLocationSkin();
+		return skin1;
 	}
 	
 	public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
@@ -304,7 +325,7 @@ public class Utils {
 		for (Direction dir : Direction.values()) {
 			pos = blockPos.offset(dir);
 			state = worldIn.getBlockState(pos);
-			if (!state.isSolid() || Utils.allowsMovement(worldIn, state, pos) || !ItemGroup.BUILDING_BLOCKS.equals(state.getBlock().asItem().getGroup())) {
+			if (!state.isSolid() || Util.allowsMovement(worldIn, state, pos) || !ItemGroup.BUILDING_BLOCKS.equals(state.getBlock().asItem().getGroup())) {
 				return true;
 			}
 		}

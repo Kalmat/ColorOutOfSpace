@@ -22,14 +22,14 @@ public class Refs {
 	public static final String VERSION = "0.0.1-BETA";
 	
 	public static int difficulty = Refs.NORMAL;
-	public static int NORMAL = 0;
+	public static final int NORMAL = 0;
 	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to while Meteorite is Active - Aggressive entities will ALWAYS duplicate
-	public static int HARDCORE = 1;
+	public static final int HARDCORE = 1;
 	
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing when sleeping)
+	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing while sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;
@@ -46,6 +46,7 @@ public class Refs {
 	public static final BlockState meteoriteState = BlockList.color_meteorite_block.getDefaultState();
 	public static final BlockState infectedState = BlockList.color_infected_block.getDefaultState();
 	public static final BlockState infectedWoodState = BlockList.color_wood_block.getDefaultState();
+	public static final BlockState infectedDirtState = BlockList.color_dirt_block.getDefaultState(); 
 	public static final BlockState infectedGrassBlockState = BlockList.color_grass_block.getDefaultState();
 	public static final BlockState infectedGrassState = BlockList.color_grass.getDefaultState(); 
 	public static final BlockState infectedLeavesState = BlockList.color_leaves_block.getDefaultState();
@@ -93,6 +94,7 @@ public class Refs {
 			BlockList.color_meteorite_block,
 			BlockList.color_infected_block,
 			BlockList.color_wood_block,
+			BlockList.color_dirt_block,
 			BlockList.color_grass_block,
 			BlockList.color_grass,
 			BlockList.color_leaves_block,
@@ -107,7 +109,8 @@ public class Refs {
 	public static final List<Block> modBlocksToCureList = Arrays.asList(
 			BlockList.color_infected_block,
 			BlockList.color_grass_block,
-			BlockList.color_wood_block
+			BlockList.color_wood_block,
+			BlockList.color_dirt_block
 	);
 	
 	public static final List<Block> dirts = Arrays.asList(
@@ -170,8 +173,8 @@ public class Refs {
 			Items.FIRE_CHARGE,
 			Items.BOOK,
 			Items.LAPIS_BLOCK,
-			//Items.ENDER_EYE,
 			Items.ENDER_PEARL
+			//Items.ENDER_EYE,
 			//Items.BLAZE_ROD,
 			//Items.END_ROD,
 			//Items.ELYTRA,
@@ -205,6 +208,7 @@ public class Refs {
 			EntityType.EVOKER,
 			EntityType.LIGHTNING_BOLT,
 			EntityType.SLIME,
+			EntityType.GIANT,
 			EntityType.WITCH
 	);
 	

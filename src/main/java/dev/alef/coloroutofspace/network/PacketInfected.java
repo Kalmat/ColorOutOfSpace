@@ -1,6 +1,5 @@
 package dev.alef.coloroutofspace.network;
 
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,23 +14,27 @@ public class PacketInfected {
 	@SuppressWarnings("unused")
     private final static Logger LOGGER = LogManager.getLogger();
 	
-	private final UUID player;
+	private final boolean infected;
+	private final int cureLevel;
 
     public PacketInfected(PacketBuffer buf) {
-    	player = buf.readUniqueId();
+    	this.infected = buf.readBoolean();
+    	this.cureLevel = buf.readInt();
     }
 
-    public PacketInfected(UUID playerUUID) {
-        this.player = playerUUID;
+    public PacketInfected(boolean isInfected, int level) {
+        this.infected = isInfected;
+        this.cureLevel = level;
     }
 
     public void toBytes(PacketBuffer buf) {
-    	buf.writeUniqueId(player);
+    	buf.writeBoolean(this.infected);
+    	buf.writeInt(this.cureLevel);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ColorOutOfSpaceRender.setPlayerInfected(true);
+            ColorOutOfSpaceRender.setPlayerInfected(this.infected, this.cureLevel);
         });
         return true;
     }

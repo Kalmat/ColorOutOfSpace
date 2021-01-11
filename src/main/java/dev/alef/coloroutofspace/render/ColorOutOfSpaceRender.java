@@ -1,6 +1,7 @@
 package dev.alef.coloroutofspace.render;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -12,16 +13,14 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.bots.CalcVector;
+import dev.alef.coloroutofspace.bot.CalcVector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -71,30 +70,25 @@ public class ColorOutOfSpaceRender {
 		return ColorOutOfSpaceRender.playerInfected;
 	}
 
-	public static void setPlayerInfected(boolean infected) {
-		ColorOutOfSpaceRender.playerInfected = infected;
-		if (!infected) {
-			ColorOutOfSpaceRender.setCureLevel(0);
+	public static void setPlayerInfected(boolean isInfected, int cureLevel) {
+		ColorOutOfSpaceRender.playerInfected = isInfected;
+		if (isInfected) {
+			ColorOutOfSpaceRender.cureLevel = cureLevel;
 		}
-	}
-
-	public static int getCureLevel() {
-		return ColorOutOfSpaceRender.cureLevel;
-	}
-
-	public static void setCureLevel(int level) {
-		ColorOutOfSpaceRender.cureLevel = level;
+		else {
+			ColorOutOfSpaceRender.cureLevel = 0;
+		}
 	}
 
 	public static void showText(MatrixStack matrixStack) {
     	
     	if (ColorOutOfSpaceRender.isPlayerInfected()) {
-    		String[] msg = { Refs.soulsCollectedMsg, ColorOutOfSpaceRender.getCureLevel() + "/" + Refs.cureMaxLevel };
+    		List<String> msg = Arrays.asList(Refs.soulsCollectedMsg, ColorOutOfSpaceRender.cureLevel + "/" + Refs.cureMaxLevel);
     		ColorOutOfSpaceRender.drawCollectedSouls(msg, matrixStack, Refs.alignUpRight, 0xFFFF0000, false, false);
     	}
     }
     
-	private static void drawCollectedSouls(String[] text, MatrixStack ms, int alignTo, int color, boolean shadow, boolean transparent) {
+	private static void drawCollectedSouls(List<String> text, MatrixStack ms, int alignTo, int color, boolean shadow, boolean transparent) {
         
     	float scaleA = 0.7F;
 		float scaleB = 1.0F;
@@ -109,7 +103,7 @@ public class ColorOutOfSpaceRender {
 		ms.scale(scaleA, scaleA, scaleA);
 		int x = calcX(alignTo, xGap, text, 0, scaleA);
 		int y = calcY(alignTo, yGap, text, 0, scaleA);
-		fr.func_238406_a_(ms, text[0], x, y, color, false);
+		fr.func_238406_a_(ms, text.get(0), x, y, color, false);
 		//fr.renderString(text[0], (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
 		ms.pop();
 
@@ -117,25 +111,25 @@ public class ColorOutOfSpaceRender {
 		ms.scale(scaleB, scaleB, scaleB);
 		x = calcX(alignTo, xGap, text, 1, scaleB);
 		y = calcY(alignTo, yGap, text, 1, scaleB);
-		fr.func_238406_a_(ms, text[1], x, y, color, false);
+		fr.func_238406_a_(ms, text.get(1), x, y, color, false);
 		//fr.renderString(text[1], (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
 		ms.pop();
 		
 		//buffers.finish();
     }
 	
-	private static int calcX(int alignTo, int xGap, String[] text, int index, float scale) {
+	private static int calcX(int alignTo, int xGap, List<String> text, int index, float scale) {
 		
 		float ratio = 1.0F / scale;
 		
 		int x = (int) (xGap * ratio);
     	
-		if (index >= 0 && index < text.length) {
+		if (index >= 0 && index < text.size()) {
 			
 	    	if (alignTo % 10 != Refs.alignLeft) {
 	    		
 	    		int screenWidth = Minecraft.getInstance().getMainWindow().getScaledWidth();
-	    		int textWidth = Minecraft.getInstance().fontRenderer.getStringWidth(text[index]);
+	    		int textWidth = Minecraft.getInstance().fontRenderer.getStringWidth(text.get(index));
 	    		
 	    		if (alignTo % 10 == Refs.alignHCenter) {
 	    			x = (int) (((screenWidth * ratio) - textWidth) / 2);
@@ -148,21 +142,21 @@ public class ColorOutOfSpaceRender {
     	return x;
 	}
 	
-	private static int calcY(int alignTo, int yGap, String[] text, int index, float scale) {
+	private static int calcY(int alignTo, int yGap, List<String> text, int index, float scale) {
 		
 		float ratio = 1.0F / scale;
 		
 		int y = yGap;
 		int lineHeight = 0;
 		
-		if (index >= 0 && index < text.length ) {
+		if (index >= 0 && index < text.size()) {
 
 			lineHeight =  Minecraft.getInstance().fontRenderer.FONT_HEIGHT * index;
 
 			if (alignTo >= Refs.alignVCenter) {
 				
 	    		int screenHeight = Minecraft.getInstance().getMainWindow().getScaledHeight();
-	    		int textHeight =  Minecraft.getInstance().fontRenderer.FONT_HEIGHT * text.length;
+	    		int textHeight =  Minecraft.getInstance().fontRenderer.FONT_HEIGHT * text.size();
 
 	    		if (alignTo < Refs.alignDown) {
 	    			y = (int) ((screenHeight - textHeight) / 2);
@@ -319,15 +313,6 @@ public class ColorOutOfSpaceRender {
 	
 	public static void resumeSound() {
 		Minecraft.getInstance().getSoundHandler().resume();
-	}
-	
-	public static ResourceLocation cloneSkin(World worldIn, PlayerEntity player, Entity mob, BlockPos pos) {
-		ResourceLocation skin1 = Minecraft.getInstance().player.getLocationSkin();
-		//GameProfile playerProfile = Minecraft.getInstance().player.getGameProfile();
-		//Map<Type, MinecraftProfileTexture> map = Minecraft.getInstance().getSkinManager().loadSkinFromCache(playerProfile);
-		//ResourceLocation skin2 = Minecraft.getInstance().getSkinManager().loadSkin((MinecraftProfileTexture)map.get(Type.SKIN), Type.SKIN);
-		//mob.copyDataFromOld(player);
-		return skin1;
 	}
 }
 

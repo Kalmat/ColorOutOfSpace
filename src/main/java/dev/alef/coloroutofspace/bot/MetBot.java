@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.bots;
+package dev.alef.coloroutofspace.bot;
 
 import java.util.Random;
 
@@ -6,9 +6,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.Utils;
+import dev.alef.coloroutofspace.Util;
 import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketCured;
+import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.BedBlock;
@@ -40,9 +40,10 @@ public class MetBot {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void metFall(World worldIn, PlayerEntity player) {
+	public static void metFall(World worldIn, PlayerEntity player) {
 
 		IPlayerData playerData = PlayerData.getFromPlayer(player);
+		MetBot metBot = new MetBot();
 		
 		if (playerData.getFallPos() == null) {
 			playerData.setFallPos(new BlockPos(player.getPositionVec()), true);
@@ -51,7 +52,6 @@ public class MetBot {
 		
 		if (playerData.getMetPos() != null) {
 			worldIn.destroyBlock(playerData.getMetPos(), false);
-			MetBot metBot = new MetBot();
 			metBot.uninfectArea(worldIn, player, playerData.getMetPos(), playerData.getPrevRadius(), false);
 		}
 		
@@ -65,19 +65,18 @@ public class MetBot {
 		}
 		worldIn.setBlockState(pos, Refs.meteoriteState);
 		worldIn.setBlockState(pos.down(), Refs.infectedGrassBlockState);
+		playerData.setMetPos(pos);
 		playerData.setMetFallen(true);
 		playerData.setMetActive(true);
-		playerData.setMetPos(pos);
 		playerData.setFallDay(-1, false);
 		playerData.setPlayerCured(false);
 		if (Refs.difficulty == Refs.HARDCORE) {
 			playerData.setPlayerInfected(false);
-			Networking.sendToClient(new PacketCured(player.getUniqueID()), (ServerPlayerEntity) player);
+			Networking.sendToClient(new PacketInfected(false, 0), (ServerPlayerEntity) player);
 			playerData.setCureLevel(0);
 		}
-		this.increaseInfectedArea(worldIn, player, playerData.getMetPos(), 0, Refs.radiusIncrease);
+		metBot.increaseInfectedArea(worldIn, player, playerData.getMetPos(), 0, Refs.radiusIncrease);
 		playerData.setPrevRadius(Refs.radiusIncrease);
-		//ColorOutOfSpace.writePlayerData(player);
 	}
 	
 	public void increaseInfectedArea(World worldIn, PlayerEntity player, BlockPos center, int prevRadius, int radius) {
@@ -107,7 +106,7 @@ public class MetBot {
 		Block oldBlock = oldState.getBlock();
 		Block upperBlock = upperState.getBlock();
 		
-		if (Refs.dirts.contains(oldBlock) && Utils.hasNotSolidAround(worldIn, pos)) {
+		if (Refs.dirts.contains(oldBlock) && Util.hasNotSolidAround(worldIn, pos)) {
 			worldIn.setBlockState(pos, Refs.infectedGrassBlockState);
 			if (upperBlock instanceof BushBlock && rand.nextInt(Refs.infectedGrassChance) == 0) {
 				worldIn.setBlockState(pos.up(), Refs.infectedGrassState);
@@ -123,16 +122,16 @@ public class MetBot {
 			worldIn.setBlockState(pos, Refs.infectedGlassPaneState);
 		}
 		else if (oldBlock.equals(Blocks.TORCH)) {
-			BlockState torchState = Utils.cloneState(oldState, Refs.infectedTorchState);
+			BlockState torchState = Util.cloneState(oldState, Refs.infectedTorchState);
 			worldIn.setBlockState(pos, torchState);
 		}
 		else if (oldBlock.equals(Blocks.WALL_TORCH)) {
-			BlockState torchState = Utils.cloneState(oldState, Refs.infectedWallTorchState);
+			BlockState torchState = Util.cloneState(oldState, Refs.infectedWallTorchState);
 			worldIn.setBlockState(pos, torchState);
 		}
 		else if (oldBlock instanceof BedBlock) {
 			//BlockState bedState = Refs.infectedBedState.with(HorizontalBlock.HORIZONTAL_FACING, (Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)).with(BlockStateProperties.OCCUPIED, (Boolean) oldState.getValues().get(BlockStateProperties.OCCUPIED));
-			BlockState bedState = Utils.cloneState(oldState, Refs.infectedBedState);
+			BlockState bedState = Util.cloneState(oldState, Refs.infectedBedState);
 			if (!oldBlock.getBlock().equals(Refs.infectedBedState.getBlock()) && oldState.getValues().get(BlockStateProperties.BED_PART).equals(BedPart.FOOT)) {
 				// This MUST BE the exact order of destroy and set actions
 		        BlockPos blockpos = pos.offset(((Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)));
@@ -144,7 +143,7 @@ public class MetBot {
 		}
 		else if (oldBlock instanceof DoorBlock) {
 			//BlockState doorState = Refs.infectedDoorState.with(HorizontalBlock.HORIZONTAL_FACING, (Direction) oldState.getValues().get(HorizontalBlock.HORIZONTAL_FACING)).with(BlockStateProperties.DOOR_HINGE, (DoorHingeSide) oldState.getValues().get(BlockStateProperties.DOOR_HINGE)).with(BlockStateProperties.POWERED, false).with(BlockStateProperties.OPEN, false);
-			BlockState doorState = Utils.cloneState(oldState, Refs.infectedDoorState);
+			BlockState doorState = Util.cloneState(oldState, Refs.infectedDoorState);
 			if (!oldBlock.equals(Refs.infectedDoorState.getBlock()) && oldState.getValues().get(BlockStateProperties.DOUBLE_BLOCK_HALF).equals(DoubleBlockHalf.LOWER)) {
 				// This MUST BE the exact order of destroy and set actions
 				worldIn.destroyBlock(pos, false);
@@ -153,7 +152,7 @@ public class MetBot {
 				worldIn.setBlockState(pos.up(), doorState.with(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER), 3);
 			}
 		}
-		else if (!Refs.modBlockList.contains(oldBlock) && ItemGroup.BUILDING_BLOCKS.equals(oldBlock.asItem().getGroup()) && Utils.hasNotSolidAround(worldIn, pos)) {
+		else if (!Refs.modBlockList.contains(oldBlock) && ItemGroup.BUILDING_BLOCKS.equals(oldBlock.asItem().getGroup()) && Util.hasNotSolidAround(worldIn, pos)) {
 			BlockState state = Refs.infectedState;
 			if (oldBlock.getDefaultState().getMaterial().equals(Material.WOOD)) {
 				state = Refs.infectedWoodState;

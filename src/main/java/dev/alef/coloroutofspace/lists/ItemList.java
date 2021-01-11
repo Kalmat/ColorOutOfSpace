@@ -1,8 +1,8 @@
 package dev.alef.coloroutofspace.lists;
 
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.items.CuredMetItem;
-import dev.alef.coloroutofspace.items.MeteoriteSwordTier;
+import dev.alef.coloroutofspace.item.CuredMetItem;
+import dev.alef.coloroutofspace.item.MeteoriteSwordTier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SwordItem;

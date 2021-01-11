@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.blocks;
+package dev.alef.coloroutofspace.block;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

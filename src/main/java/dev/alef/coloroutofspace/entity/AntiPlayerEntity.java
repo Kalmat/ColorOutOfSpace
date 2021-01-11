@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.entities;
+package dev.alef.coloroutofspace.entity;
 
 import java.util.Random;
 
@@ -6,12 +6,12 @@ import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.lists.EntityList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.monster.ZombieEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.IPacket;
@@ -32,9 +32,8 @@ public class AntiPlayerEntity extends ZombieEntity {
 	   super(type, worldIn);
 	}
    
-	@SuppressWarnings("unchecked")
 	public AntiPlayerEntity(FMLPlayMessages.SpawnEntity packet, World worldIn) {
-		this((EntityType<? extends AntiPlayerEntity>) EntityList.color_anti_player, worldIn);
+		this(EntityList.color_anti_player, worldIn);
 	}
 
    public static AttributeModifierMap.MutableAttribute func_234342_eQ_() {
@@ -76,6 +75,10 @@ public class AntiPlayerEntity extends ZombieEntity {
    protected boolean shouldBurnInDay() {
       return false;
    }
+   
+   protected boolean shouldDrown() {
+	   return false;
+   }
 
    protected SoundEvent getAmbientSound() {
       return SoundEvents.ENTITY_HUSK_AMBIENT;
@@ -86,7 +89,7 @@ public class AntiPlayerEntity extends ZombieEntity {
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.ENTITY_HUSK_DEATH;
+      return SoundEvents.ENTITY_GHAST_SCREAM;
    }
 
    protected SoundEvent getStepSound() {
@@ -95,15 +98,10 @@ public class AntiPlayerEntity extends ZombieEntity {
 
    public boolean attackEntityAsMob(Entity entityIn) {
       boolean flag = super.attackEntityAsMob(entityIn);
-      if (flag && this.getHeldItemMainhand().isEmpty() && entityIn instanceof LivingEntity) {
-         float f = this.world.getDifficultyForLocation(this.getPosition()).getAdditionalDifficulty();
-         ((LivingEntity)entityIn).addPotionEffect(new EffectInstance(Effects.HUNGER, 140 * (int)f));
+      if (flag && Refs.difficulty == Refs.HARDCORE && entityIn instanceof PlayerEntity) {
+         ((PlayerEntity)entityIn).addPotionEffect(new EffectInstance(Effects.POISON, 100));
       }
       return flag;
-   }
-
-   protected boolean shouldDrown() {
-      return false;
    }
 
    protected ItemStack getSkullDrop() {

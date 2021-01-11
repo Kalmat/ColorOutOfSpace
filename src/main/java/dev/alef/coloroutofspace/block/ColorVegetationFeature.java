@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.blocks;
+package dev.alef.coloroutofspace.block;
 
 import java.util.Random;
 

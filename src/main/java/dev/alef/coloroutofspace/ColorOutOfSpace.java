@@ -1,34 +1,25 @@
 package dev.alef.coloroutofspace;
 
 import java.io.IOException;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.entities.AntiPlayerEntity;
-import dev.alef.coloroutofspace.entities.renderers.AntiPlayerRenderer;
 import dev.alef.coloroutofspace.lists.BlockList;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketAddCure;
+import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerDataProvider;
-import dev.alef.coloroutofspace.playerdata.PlayerDataStorage;
-import dev.alef.coloroutofspace.bots.MetBot;
+import dev.alef.coloroutofspace.bot.MetBot;
 import dev.alef.coloroutofspace.config.ConfigFile;
-import dev.alef.coloroutofspace.items.MeteoriteSwordTier;
+import dev.alef.coloroutofspace.item.MeteoriteSwordTier;
 import dev.alef.coloroutofspace.lists.BlockItemList;
 import dev.alef.coloroutofspace.render.ColorOutOfSpaceRender;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -42,7 +33,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -50,47 +40,37 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DeferredWorkQueue;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
+import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 //The value here should match an entry in the META-INF/mods.toml file
 @Mod(Refs.MODID)
 public class ColorOutOfSpace {
 	
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-    public static IPlayerData playerData = null;
 	private static long serverPrevTime = 0;
-    
-    private static boolean debug = false;
     
 	public ColorOutOfSpace() {
 
 		// Register modloading events
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::parallelDispatch);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
 		
 		// Register other events we use
 		MinecraftForge.EVENT_BUS.register(new PlayerCapabilityEventListener());
         MinecraftForge.EVENT_BUS.register(new onPlayerLoggedInListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerRespawnListener());
+        MinecraftForge.EVENT_BUS.register(new onPlayerCloneListener());
         MinecraftForge.EVENT_BUS.register(new onWorldTickListener());
         MinecraftForge.EVENT_BUS.register(new onBlockBreakListener());
         MinecraftForge.EVENT_BUS.register(new onPlayerSleepListener());
@@ -114,37 +94,23 @@ public class ColorOutOfSpace {
 		Networking.registerMessages();
 		
         // Load config file
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ConfigFile.spec);
-	}
-
-	@SuppressWarnings({ "deprecation", "unchecked" })
-	private void setup(final FMLCommonSetupEvent event) {
-	    // some preinit code
-		if (ColorOutOfSpace.debug) { LOGGER.info("HELLO from PREINIT"); }
-	    DeferredWorkQueue.runLater(() -> {
-            GlobalEntityTypeAttributes.put((EntityType<? extends LivingEntity>) EntityList.color_anti_player, AntiPlayerEntity.setCustomAttributes().create());
-        });
-    	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == 1 ? 1 : 0;
-        CapabilityManager.INSTANCE.register(IPlayerData.class, new PlayerDataStorage(), PlayerData::new);
-	}
-	 
-	@SuppressWarnings({ "resource", "unchecked" })
-	private void doClientStuff(final FMLClientSetupEvent event) {
-		// do something that can only be done on the client
-		if (ColorOutOfSpace.debug) { LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings); }
-		RenderTypeLookup.setRenderLayer(BlockList.color_grass, RenderType.getCutout());
-		//RenderTypeLookup.setRenderLayer(BlockList.color_leaves_block, RenderType.getSolid());
-    	RenderingRegistry.registerEntityRenderingHandler((EntityType<? extends AntiPlayerEntity>) EntityList.color_anti_player, new AntiPlayerRenderer.RenderFactory());
+		ConfigFile.registerConfig();
 	}
 	
-	private void enqueueIMC(final InterModEnqueueEvent event) {
-		// some example code to dispatch IMC to another mod
-		if (ColorOutOfSpace.debug) { InterModComms.sendTo(Refs.MODID, "helloworld", () -> { LOGGER.info("Hello world from the MDK"); return "Hello world"; }); }
+	private void setup(final FMLCommonSetupEvent event) {
+	    // some preinit code
+    	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == 1 ? 1 : 0;
+        PlayerData.registerPlayerCapability();
 	}
-
-	private void processIMC(final InterModProcessEvent event) {
-		// some example code to receive and process InterModComms from other mods
-		if (ColorOutOfSpace.debug) { LOGGER.info("Got IMC {}", event.getIMCStream().map(m->m.getMessageSupplier().get()).collect(Collectors.toList())); }
+ 	
+	private void parallelDispatch(final ParallelDispatchEvent event) {
+		event.enqueueWork(() -> EntityList.putAttributes()); 
+	}
+	 
+	private void doClientStuff(final FMLClientSetupEvent event) {
+		// do something that can only be done on the client
+		BlockList.registerBlockRenderers();
+		EntityList.registerEntityRenderers();
 	}
 	
 	public static class PlayerCapabilityEventListener {
@@ -152,13 +118,13 @@ public class ColorOutOfSpace {
 	    public final static ResourceLocation PlayerDataCapability = new ResourceLocation(Refs.MODID, "player_data");
 	    
 	    @SubscribeEvent
-	    public void attachCapability(AttachCapabilitiesEvent<Entity> event) {
+	    public void attachCapability(final AttachCapabilitiesEvent<Entity> event) {
 	        if (event.getObject() instanceof PlayerEntity) {
 	        	event.addCapability(PlayerDataCapability, new PlayerDataProvider());
 	        }
 	    }
 	}
-
+	
 	// CLIENT & SERVER
     public class onPlayerLoggedInListener {
         
@@ -173,13 +139,11 @@ public class ColorOutOfSpace {
 				IPlayerData playerData = PlayerData.getFromPlayer(player);
 
 				if (playerData.getFirstJoin() == 0L) {
-					playerData.reset(player, true);
 					playerData.setFirstJoin(world.getGameTime() + 1L);
 					playerData.setFallDay(Refs.daysToFall, true);
 				}
 				else if (playerData.isPlayerInfected()) {
-					Utils.applyInfectedEffects(player, false);
-					Networking.sendToClient(new PacketAddCure(player.getUniqueID(), playerData.getCureLevel()), (ServerPlayerEntity) player);
+					Util.applyInfectedEffects(player, playerData.getCureLevel(), false);
 				}
 			}
 			else {
@@ -187,29 +151,7 @@ public class ColorOutOfSpace {
 				ColorOutOfSpaceRender.setClientPlayer(player);
 			}
         }
-		
     }
-
-    // SERVER
-    public class onPlayerRespawnListener {
-        
-		@SubscribeEvent
-        public void PlayerRespawn(final PlayerRespawnEvent event) {
-			
-			PlayerEntity player = event.getPlayer();
-			World world = player.world;
-
-			if (!world.isRemote) {
-
-				IPlayerData playerData = PlayerData.getFromPlayer(player);
-				
-				if (playerData.isPlayerInfected()) {
-					Utils.applyInfectedEffects(player, false);
-				}
-			}
-		}
-	}
-    
 
     // SERVER
     public class onPlayerCloneListener {
@@ -217,18 +159,19 @@ public class ColorOutOfSpace {
 		@SubscribeEvent
         public void PlayerClone(final PlayerEvent.Clone event) {
 			
+			PlayerEntity origPlayer = event.getOriginal();
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
-
+			
 			if (!world.isRemote) {
 
-				if (event.isWasDeath()) {
-			        player = (PlayerEntity) event.getPlayer();
-			        ColorOutOfSpace.playerData.copyForRespawn(ColorOutOfSpace.playerData);
-				} 
+				IPlayerData origPlayerData = PlayerData.getFromPlayer(origPlayer);
 				IPlayerData playerData = PlayerData.getFromPlayer(player);
+				if (event.isWasDeath()) {
+			        playerData.copyForRespawn(origPlayerData);
+				} 
 				if (playerData.isPlayerInfected()) {
-					Utils.applyInfectedEffects(player, false);
+					Util.applyInfectedEffects(player, playerData.getCureLevel(), false);
 				}
 			}
 		}
@@ -261,7 +204,7 @@ public class ColorOutOfSpace {
 							playerData.setPrevRadius(radius);
 							
 							if (playerData.isPlayerInfected()) {
-								Utils.applyInfectedEffects(player, false);
+								Util.applyInfectedEffects(player, playerData.getCureLevel(), false);
 							}
 						}
 						else if (!playerData.isPlayerCured()) {
@@ -321,8 +264,7 @@ public class ColorOutOfSpace {
 				IPlayerData playerData = PlayerData.getFromPlayer(player);
 				
 				if ((playerData.getFallDay() == 0 && !playerData.isMetFallen() && !playerData.isPlayerCured()) && (!playerData.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE)) {
-					MetBot metBot = new MetBot();
-					metBot.metFall(world, player);
+					MetBot.metFall(world, player);
 				}
 			}
 		}
@@ -353,9 +295,6 @@ public class ColorOutOfSpace {
 						playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
 					}
 				}
-				else if (event.getSource().getTrueSource() instanceof AntiPlayerEntity && Refs.difficulty == Refs.HARDCORE) {
-					playerAttacked.addPotionEffect(new EffectInstance(Effects.POISON, 100));
-				}
 			}
 		}
     }
@@ -371,8 +310,8 @@ public class ColorOutOfSpace {
         	
         	Item itemInMainHand = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND).getStack().getItem();
         	
-    		if (itemInMainHand.equals(ItemList.meteorite_sword)) {
-    			Utils.knockback(player, target, MeteoriteSwordTier.getKnockback());
+    		if (itemInMainHand.equals(ItemList.meteorite_sword) && Refs.difficulty != Refs.HARDCORE) {
+    			Util.knockback(player, target, MeteoriteSwordTier.getKnockback());
         	}
 		}
 	}
@@ -396,7 +335,7 @@ public class ColorOutOfSpace {
 					if (playerData.isPlayerInfected() && playerData.isMetActive()) {
 
 						playerData.setCureLevel(playerData.getCureLevel() + 1);
-						Networking.sendToClient(new PacketAddCure(attacker.getUniqueID(), playerData.getCureLevel()), (ServerPlayerEntity) attacker);
+						Networking.sendToClient(new PacketInfected(playerData.isPlayerInfected(), playerData.getCureLevel()), (ServerPlayerEntity) attacker);
 
 						if (playerData.getCureLevel() == Refs.cureMaxLevel) {
 							world.setBlockState(playerData.getMetPos(), Refs.curedMetState);
@@ -407,16 +346,7 @@ public class ColorOutOfSpace {
 				else if (!(entity instanceof PlayerEntity) && !(attacker instanceof PlayerEntity) &&
 						entity.world.getDimensionKey().getLocation().equals(DimensionType.OVERWORLD_ID) &&
 						Refs.infectedDupEntities.contains(attacker.getType())) {
-					
-					Random rand = new Random();
-					EntityType<?> spawnEntity = attacker.getType();
-					int chance = Refs.dupEntityChance;
-					if (Refs.aggressiveEntities.contains(spawnEntity)) {
-						chance = Refs.dupAggressiveChance;
-					}
-					if (rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) {
-						Utils.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
-					}
+					Util.dupEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), attacker, entity, true, null);
 				}
 	        }
 		}
@@ -426,7 +356,7 @@ public class ColorOutOfSpace {
 	public class onBlockBreakListener {
 		
 		@SubscribeEvent
-		public void BlockBreak(final BlockEvent.BreakEvent  event) {
+		public void BlockBreak(final BlockEvent.BreakEvent event) {
 
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;

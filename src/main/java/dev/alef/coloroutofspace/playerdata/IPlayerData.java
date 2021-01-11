@@ -40,5 +40,4 @@ public interface IPlayerData {
 	
 	public void reset(PlayerEntity player, boolean destroyMet);
     public void copyForRespawn(IPlayerData deadPlayer);
-
 }

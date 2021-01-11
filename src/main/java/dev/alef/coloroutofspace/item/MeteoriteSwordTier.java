@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.items;
+package dev.alef.coloroutofspace.item;
 
 import net.minecraft.item.IItemTier;
 import net.minecraft.item.Item;

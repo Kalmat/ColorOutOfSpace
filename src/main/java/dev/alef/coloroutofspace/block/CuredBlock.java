@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.blocks;
+package dev.alef.coloroutofspace.block;
 
 import java.util.Random;
 
@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.Utils;
+import dev.alef.coloroutofspace.Util;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -41,26 +41,26 @@ public class CuredBlock extends Block {
 		Random rand2 = new Random();
 		int type = rand1.nextInt(Math.max(7, Refs.lootChance));
 		
-		if (type == 0 || type == 1 || type == 2 || type == 3) {  // Item
+		if (type >= 0 && type <= 3) {  // Item
 
 			Item spawnItem = Refs.lootItems.get(rand2.nextInt(Refs.lootItems.size()));
-			Utils.spawnItem(worldIn, player, pos, spawnItem, true, true, Refs.enchantabilityChance);
+			Util.spawnItem(worldIn, player, pos, spawnItem, true, true, Refs.enchantabilityChance);
 		}
-		else if (type == 4 || type == 5) {  // Entity
+		else if (type >= 4 && type <= 5) {  // Entity
 			
 			EntityType<?> spawnEntity = Refs.lootEntities.get(rand2.nextInt(Refs.lootEntities.size()));
-			Utils.spawnEntity(worldIn, player, pos, spawnEntity, true, null);
+			Util.spawnEntity(worldIn, player, pos, spawnEntity, true, null);
 		}
 		else if (type == 6) { // Water or Lava
 			
 			Fluid spawnFluid = Refs.nonLootBlocks.get(rand2.nextInt(Refs.nonLootBlocks.size()));
-			Utils.spawnFluid(worldIn, player, pos, spawnFluid);
+			Util.spawnFluid(worldIn, player, pos, spawnFluid);
   		}
 		else if (Refs.spawnDefaultLootEntity) { // Default (lepisma or nothing)
 			
-			if (rand2.nextInt(Refs.spawnDefaultLootChance) == 0) {
+			if (rand2.nextInt(Refs.spawnDefaultLootChance) == 0 || Refs.difficulty == Refs.HARDCORE) {
 				EntityType<?> spawnEntity = Refs.defaultLootEntity;
-				Utils.spawnEntity(worldIn, player, pos, spawnEntity, false, null);
+				Util.spawnEntity(worldIn, player, pos, spawnEntity, false, null);
 			}
 		}
 	}

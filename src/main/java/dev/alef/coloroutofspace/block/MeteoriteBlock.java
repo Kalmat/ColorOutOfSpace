@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.blocks;
+package dev.alef.coloroutofspace.block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,9 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.Utils;
-import dev.alef.coloroutofspace.bots.CalcVector;
-import dev.alef.coloroutofspace.bots.MetBot;
+import dev.alef.coloroutofspace.Util;
+import dev.alef.coloroutofspace.bot.CalcVector;
+import dev.alef.coloroutofspace.bot.MetBot;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.Block;
@@ -38,14 +38,12 @@ public class MeteoriteBlock extends Block {
 
 			IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) placer);
 
-			if (playerData.getMetPos() != null) {
-				worldIn.destroyBlock(playerData.getMetPos(), false);
-			}
 			worldIn.destroyBlock(pos, false);
 			playerData.setFallPos(pos, false);
+			playerData.setPlayerInfected(false);
+			((PlayerEntity) placer).clearActivePotions();
 			
-			MetBot metBot = new MetBot();
-			metBot.metFall(worldIn, (PlayerEntity) placer);
+			MetBot.metFall(worldIn, (PlayerEntity) placer);
 		}
 		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 	}
@@ -56,6 +54,7 @@ public class MeteoriteBlock extends Block {
 		if (!worldIn.isRemote && !player.isSneaking()) {
 			IPlayerData playerData = PlayerData.getFromPlayer(player);
 			playerData.reset(player, false);
+			player.clearActivePotions();
 		}
 		super.onBlockHarvested(worldIn, pos, state, player);
 	}
@@ -77,7 +76,7 @@ public class MeteoriteBlock extends Block {
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
     	
     	if(!worldIn.isRemote) {
-    		Utils.infect(worldIn, pos, entityIn);
+    		Util.infect(worldIn, pos, entityIn);
     	}
     	super.onEntityWalk(worldIn, pos, entityIn);
     }

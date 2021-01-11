@@ -4,11 +4,12 @@ import java.util.Random;
 
 import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketCured;
+import dev.alef.coloroutofspace.network.PacketInfected;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 
 public class PlayerData implements IPlayerData {
 	
@@ -148,7 +149,7 @@ public class PlayerData implements IPlayerData {
 		this.setPlayerInfected(false);
 		this.setCureLevel(0);
 		this.setPlayerCured(false);
-		Networking.sendToClient(new PacketCured(player.getUniqueID()), (ServerPlayerEntity) player);
+		Networking.sendToClient(new PacketInfected(false, 0), (ServerPlayerEntity) player);
 	}
 	
     public static IPlayerData getFromPlayer(PlayerEntity player) {
@@ -156,7 +157,7 @@ public class PlayerData implements IPlayerData {
                 .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap, null)
                 .orElseThrow(()->new IllegalArgumentException("LazyOptional must be not empty!"));
     }
-
+    
     @Override
     public void copyForRespawn(IPlayerData deadPlayer){
 
@@ -171,5 +172,9 @@ public class PlayerData implements IPlayerData {
         this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setCureLevel(deadPlayer.getCureLevel());
         this.setPlayerCured(deadPlayer.isPlayerCured());
+    }
+    
+    public static void registerPlayerCapability() {
+    	CapabilityManager.INSTANCE.register(IPlayerData.class, new PlayerDataStorage(), PlayerData::new);
     }
 }

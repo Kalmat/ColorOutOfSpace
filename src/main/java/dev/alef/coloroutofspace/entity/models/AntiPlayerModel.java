@@ -1,4 +1,4 @@
-package dev.alef.coloroutofspace.entities.models;
+package dev.alef.coloroutofspace.entity.models;
 
 import net.minecraft.client.renderer.entity.model.AbstractZombieModel;
 import net.minecraft.entity.monster.ZombieEntity;

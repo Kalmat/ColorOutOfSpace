@@ -34,18 +34,6 @@ public class Networking {
 			.decoder(PacketInfected::new)
 			.consumer(PacketInfected::handle)
 			.add();
-
-        INSTANCE.messageBuilder(PacketAddCure.class, nextID())
-			.encoder(PacketAddCure::toBytes)
-			.decoder(PacketAddCure::new)
-			.consumer(PacketAddCure::handle)
-			.add();
-
-        INSTANCE.messageBuilder(PacketCured.class, nextID())
-			.encoder(PacketCured::toBytes)
-			.decoder(PacketCured::new)
-			.consumer(PacketCured::handle)
-			.add();
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {

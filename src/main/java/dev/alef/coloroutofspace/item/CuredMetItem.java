@@ -1,12 +1,12 @@
-package dev.alef.coloroutofspace.items;
+package dev.alef.coloroutofspace.item;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.Utils;
-import dev.alef.coloroutofspace.bots.MetBot;
+import dev.alef.coloroutofspace.Util;
+import dev.alef.coloroutofspace.bot.MetBot;
 import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketCured;
+import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -36,31 +36,35 @@ public class CuredMetItem extends Item {
     * the Item before the action is complete.
     */
    public ItemStack onItemUseFinish(ItemStack stack, World worldIn, LivingEntity entityLiving) {
-      entityLiving.clearActivePotions();
-      entityLiving.setGlowing(false);
 
-      if (entityLiving instanceof ServerPlayerEntity) {
+	   if (entityLiving instanceof ServerPlayerEntity) {
          ServerPlayerEntity serverplayerentity = (ServerPlayerEntity)entityLiving;
          CriteriaTriggers.CONSUME_ITEM.trigger(serverplayerentity, stack);
          serverplayerentity.addStat(Stats.ITEM_USED.get(this));
       }
 
-      if (entityLiving instanceof PlayerEntity && !((PlayerEntity)entityLiving).abilities.isCreativeMode) {
-         stack.shrink(1);
-      }
-      
-      if (!worldIn.isRemote) {
-    	  IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity)entityLiving);
-	      playerData.setPlayerCured(true);
-	      playerData.setPlayerInfected(false);
-	      playerData.setMetActive(false);
-	      Networking.sendToClient(new PacketCured(((PlayerEntity)entityLiving).getUniqueID()), (ServerPlayerEntity) entityLiving);
-	      
-	      Utils.spawnMetSword(worldIn, (PlayerEntity)entityLiving, true);
-	      
-	      if (playerData.getMetPos() != null) {
-		      MetBot metBot = new MetBot();
-	    	  metBot.uninfectArea(worldIn, (PlayerEntity)entityLiving, playerData.getMetPos(), playerData.getPrevRadius(), true);
+      if (entityLiving instanceof PlayerEntity) {
+    	  
+    	  if (!((PlayerEntity)entityLiving).abilities.isCreativeMode) {
+    		  stack.shrink(1);
+    	  }
+    	  
+          entityLiving.clearActivePotions();
+          entityLiving.setGlowing(false);
+
+	      if (!worldIn.isRemote) {
+	    	  IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity)entityLiving);
+		      playerData.setPlayerCured(true);
+		      playerData.setPlayerInfected(false);
+		      playerData.setMetActive(false);
+		      Networking.sendToClient(new PacketInfected(false, 0), (ServerPlayerEntity) entityLiving);
+		      
+		      Util.spawnMetSword(worldIn, (PlayerEntity)entityLiving, true);
+		      
+		      if (playerData.getMetPos() != null) {
+			      MetBot metBot = new MetBot();
+		    	  metBot.uninfectArea(worldIn, (PlayerEntity)entityLiving, playerData.getMetPos(), playerData.getPrevRadius(), true);
+		      }
 	      }
       }
       return stack.isEmpty() ? ItemStack.EMPTY : stack;
