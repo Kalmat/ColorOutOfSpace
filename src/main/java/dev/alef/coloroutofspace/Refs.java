@@ -29,7 +29,7 @@ public class Refs {
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing while sleeping)
+	public static final int timeIncrease = 500; // 24000 = one day (clock not increasing while sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;

@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import dev.alef.coloroutofspace.bot.MetBot;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
@@ -70,7 +71,7 @@ public class Util {
 			Util.applyInfectedEffects(player, playerData.getCureLevel(), true);
 			if (!playerData.isPlayerInfected()) {
 				playerData.setPlayerInfected(true);
-				Util.spawnAntiPlayer((ServerWorld) worldIn, player, playerData.getMetPos().up());
+				Util.spawnAntiPlayer((ServerWorld) worldIn, player, playerData.getMetPos().up(), true);
 			}
     	}
     	else if (entityIn instanceof LivingEntity) {
@@ -80,6 +81,7 @@ public class Util {
 			if (i >= 0 && ((LivingEntity) entityIn).getActivePotionEffects().size() == 0) {
 				
 				((LivingEntity) entityIn).setGlowing(true);
+				((LivingEntity) entityIn).setHealth(2.0F);
 				((LivingEntity) entityIn).addPotionEffect(new EffectInstance(Effects.INSTANT_DAMAGE, Refs.timeIncrease));
 				Entity spawnedEntity = Util.spawnEntity(worldIn, null, new BlockPos(entityIn.getPositionVec()).up(), Refs.infectedEntities.get(i), true, null);
 				spawnedEntity.setGlowing(true);
@@ -87,12 +89,18 @@ public class Util {
 			else if (Refs.difficulty == Refs.HARDCORE && entityIn instanceof MonsterEntity && !entityIn.hasCustomName()) {
 				entityIn.setGlowing(true);
 				Util.applyPersistence(entityIn, null);
-				// Even more hardcore: turn them all into ZOGLINGS!!!! (but think what to do with the AntiPlayer... spawn jailed right on top of the meteorite?)
+				// Even more hardcore: turn them all into ZOGLINGS!!!! (then keep anti-player jailed or they will fight each other)
 			}
     	}
 	}
 	
-	public static LivingEntity spawnAntiPlayer(ServerWorld worldIn, PlayerEntity player, BlockPos pos) {
+	public static LivingEntity spawnAntiPlayer(ServerWorld worldIn, PlayerEntity player, BlockPos pos, boolean jailed) {
+
+		if (jailed) {
+			MetBot metBot = new MetBot();
+			metBot.increaseInfectedArea(worldIn, player, pos, Refs.explosionRadius - 2, Refs.explosionRadius - 1, true);
+		}
+
 		Entity spawnedEntity = Util.spawnEntity(worldIn, null, pos, EntityList.color_anti_player, true, "Evil "+player.getScoreboardName());
 		for (ItemStack armor : player.getEquipmentAndArmor()) {
 			if (armor != null && !armor.equals(ItemStack.EMPTY)) {

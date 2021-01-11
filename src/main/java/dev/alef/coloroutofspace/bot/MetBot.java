@@ -75,11 +75,11 @@ public class MetBot {
 			Networking.sendToClient(new PacketInfected(false, 0), (ServerPlayerEntity) player);
 			playerData.setCureLevel(0);
 		}
-		metBot.increaseInfectedArea(worldIn, player, playerData.getMetPos(), 0, Refs.radiusIncrease);
+		metBot.increaseInfectedArea(worldIn, player, playerData.getMetPos(), 0, Refs.radiusIncrease, false);
 		playerData.setPrevRadius(Refs.radiusIncrease);
 	}
 	
-	public void increaseInfectedArea(World worldIn, PlayerEntity player, BlockPos center, int prevRadius, int radius) {
+	public void increaseInfectedArea(World worldIn, PlayerEntity player, BlockPos center, int prevRadius, int radius, boolean makeJail) {
 		
 		int xx = center.getX();
 		int yy = center.getY();
@@ -91,14 +91,15 @@ public class MetBot {
 				for (int x = -radius; x < radius; ++x) {
 					if (x*x + y*y + z*z > prevRadius*prevRadius && x*x + y*y + z*z <= radius*radius) {
 						pos = new BlockPos(xx + x, yy + y, zz + z);
-						this.infectBlock(worldIn, pos);
+						this.infectBlock(worldIn, pos, makeJail);
 					}
 				}
 			}
 		}
 	}
 	
-	public void infectBlock(World worldIn, BlockPos pos) {
+	@SuppressWarnings("deprecation")
+	public void infectBlock(World worldIn, BlockPos pos, boolean makeJail) {
 		
 		Random rand = new Random();
 		BlockState oldState = worldIn.getBlockState(pos);
@@ -158,6 +159,9 @@ public class MetBot {
 				state = Refs.infectedWoodState;
 			}
 			worldIn.setBlockState(pos, state);
+		}
+		else if (makeJail && oldState.isAir()) {
+			worldIn.setBlockState(pos, Refs.infectedGlassState);
 		}
 	}
 	

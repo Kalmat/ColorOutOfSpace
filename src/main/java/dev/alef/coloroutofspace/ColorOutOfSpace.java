@@ -200,7 +200,7 @@ public class ColorOutOfSpace {
 							
 							int radius = playerData.getPrevRadius() + Refs.radiusIncrease;
 							MetBot metBot = new MetBot();
-							metBot.increaseInfectedArea(world, player, playerData.getMetPos(), playerData.getPrevRadius(), radius);
+							metBot.increaseInfectedArea(world, player, playerData.getMetPos(), playerData.getPrevRadius(), radius, false);
 							playerData.setPrevRadius(radius);
 							
 							if (playerData.isPlayerInfected()) {
