@@ -29,7 +29,7 @@ public class Refs {
 	public static final int daysToFall = 5;
 	public static final int graceDaysToFall = 10;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 500; // 24000 = one day (clock not increasing while sleeping)
+	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing while sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
 	public static final boolean limitCureTime = false;
@@ -113,7 +113,7 @@ public class Refs {
 			BlockList.color_dirt_block
 	);
 	
-	public static final List<Block> dirts = Arrays.asList(
+	public static final List<Block> dirtsList = Arrays.asList(
 			Blocks.DIRT,
 			Blocks.COARSE_DIRT,
 			Blocks.GRASS_BLOCK,
@@ -121,7 +121,7 @@ public class Refs {
 			Blocks.MYCELIUM
 	);
 	
-	public static final List<Block> chests = Arrays.asList(
+	public static final List<Block> chestsList = Arrays.asList(
 			Blocks.CHEST,
 			Blocks.ENDER_CHEST,
 			Blocks.TRAPPED_CHEST
@@ -247,9 +247,9 @@ public class Refs {
 	
 	public static final List<EntityType<?>> infectedEntities = Arrays.asList(
 			EntityType.HUSK,
-			EntityType.field_242287_aj, // PIGLIN BRUTE
+			EntityList.color_brute,
 			EntityType.RAVAGER,
-			EntityType.BLAZE, 			//EntityType.field_233590_aW_, // ZOGLIN (way too aggressive)
+			EntityType.BLAZE,
 			EntityType.SHULKER,
 			EntityType.GHAST,
 			EntityType.GHAST,
@@ -280,6 +280,7 @@ public class Refs {
 	
 	public static final List<EntityType<?>> infectedDupEntities = Arrays.asList(
 			EntityType.HUSK,
+			EntityList.color_brute,
 			EntityType.field_242287_aj, // PIGLIN BRUTE
 			EntityType.PIGLIN,
 			EntityType.ZOGLIN,
@@ -295,6 +296,7 @@ public class Refs {
 	);
 	
 	public static final List<EntityType<?>> aggressiveEntities = Arrays.asList(
+			EntityList.color_brute,
 			EntityType.ZOGLIN,
 			EntityType.GUARDIAN,
 			EntityType.ELDER_GUARDIAN

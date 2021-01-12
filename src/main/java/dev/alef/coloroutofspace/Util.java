@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.bot.MetBot;
+import dev.alef.coloroutofspace.entity.AntiPlayerEntity;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
@@ -191,8 +192,9 @@ public class Util {
 		if (Refs.aggressiveEntities.contains(spawnEntity)) {
 			chance = Refs.dupAggressiveChance;
 		}
-		if (rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) {
-			Util.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
+		if ((rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) && !(entity instanceof AntiPlayerEntity)) {
+			Entity spawnedEntity = Util.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
+			spawnedEntity.setGlowing(true);
 		}
 	}
 	
