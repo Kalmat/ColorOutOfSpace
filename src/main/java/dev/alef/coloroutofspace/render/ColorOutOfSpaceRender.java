@@ -3,31 +3,27 @@ package dev.alef.coloroutofspace.render;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.bot.CalcVector;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.common.ForgeConfig;
 
 @SuppressWarnings("resource")
 public class ColorOutOfSpaceRender {
@@ -35,56 +31,42 @@ public class ColorOutOfSpaceRender {
 	@SuppressWarnings("unused")
     private static final Logger LOGGER = LogManager.getLogger();
 	
-	private static World clientWorld;
-	private static PlayerEntity clientPlayer;
-	
 	private static boolean playerInfected = false;
-	private static int cureLevel = 0;
-	
-    private static boolean optifineChecked = false;
-    private static boolean optifinePresent = false;
-    
-    public static final int KEY_UNDO = GLFW.GLFW_KEY_Z;
-    public static final int KEY_ROTATE = GLFW.GLFW_KEY_R;
-    
- 	public ColorOutOfSpaceRender() {
-    }
- 	
-	public static void setClientWorld(World worldIn) {
-		ColorOutOfSpaceRender.clientWorld = worldIn;
-	}
-	
-	public static World getClientWorld() {
-		return ColorOutOfSpaceRender.clientWorld;
-	}
-
-	public static void setClientPlayer(PlayerEntity player) {
-		ColorOutOfSpaceRender.clientPlayer = player;
-	}
-	
-	public static PlayerEntity getClientPlayer() {
-		return ColorOutOfSpaceRender.clientPlayer;
-	}
+	private static int metDisableLevel = 0;
 	
     public static boolean isPlayerInfected() {
 		return ColorOutOfSpaceRender.playerInfected;
 	}
 
-	public static void setPlayerInfected(boolean isInfected, int cureLevel) {
+	public static void setPlayerInfected(boolean isInfected, int metDisableLevel, boolean metJustDisabled) {
 		ColorOutOfSpaceRender.playerInfected = isInfected;
 		if (isInfected) {
-			ColorOutOfSpaceRender.cureLevel = cureLevel;
+			ColorOutOfSpaceRender.metDisableLevel = metDisableLevel;
+			if (metJustDisabled) {
+				ColorOutOfSpaceRender.playSound(Refs.curedMetSound);
+			}
 		}
 		else {
-			ColorOutOfSpaceRender.cureLevel = 0;
+			ColorOutOfSpaceRender.metDisableLevel = 0;
 		}
 	}
 
 	public static void showText(MatrixStack matrixStack) {
     	
     	if (ColorOutOfSpaceRender.isPlayerInfected()) {
-    		List<String> msg = Arrays.asList(Refs.soulsCollectedMsg, ColorOutOfSpaceRender.cureLevel + "/" + Refs.cureMaxLevel);
-    		ColorOutOfSpaceRender.drawCollectedSouls(msg, matrixStack, Refs.alignUpRight, 0xFFFF0000, false, false);
+    		
+    		List<String> msg = null;
+    		int textColor = 0;
+    		
+    		if (ColorOutOfSpaceRender.metDisableLevel < Refs.cureMaxLevel) {
+    			msg = Arrays.asList(Refs.soulsCollectedMsg, ColorOutOfSpaceRender.metDisableLevel + "/" + Refs.cureMaxLevel);
+    			textColor = 0xFFFF0000;
+    		}
+    		else {
+    			msg = Arrays.asList(Refs.allSoulsCollectedMsg, Refs.mineMetMsg);
+    			textColor = 0xFF00FF00;
+    		}
+    		ColorOutOfSpaceRender.drawCollectedSouls(msg, matrixStack, Refs.alignUpRight, textColor, false, false);
     	}
     }
     
@@ -195,11 +177,12 @@ public class ColorOutOfSpaceRender {
 		buffers.finish();
 	}
     
-    public static boolean showMetGlint(MatrixStack ms, World worldIn, BlockPos metPos) {
+    public static boolean showMetGlint(MatrixStack ms, BlockPos metPos) {
 		
-		PlayerEntity player = ColorOutOfSpaceRender.getClientPlayer();
-		BlockPos playerPos = new BlockPos(player.getPositionVec());
-		
+		ClientWorld world = Minecraft.getInstance().world;
+    	PlayerEntity player = Minecraft.getInstance().player;
+		BlockPos playerPos = player.getPosition();
+
 		if (metPos != null && metPos.manhattanDistance(playerPos) <= 32) {
 			
 			Vector3d metPosVec = new Vector3d(metPos.getX(), metPos.getY(), metPos.getZ());
@@ -208,7 +191,7 @@ public class ColorOutOfSpaceRender {
 
 			int radius = 2;
 			if (metPos.manhattanDistance(playerPos) <= 16) {
-				radius = (int) ((worldIn.getDayTime() / 10) % 3);
+				radius = (int) ((world.getDayTime() / 10) % 3);
 			}
 			
 			ColorOutOfSpaceRender.drawSphere(ms, buffers, metPosVec, radius, 36, 18, Refs.glintColor, false);
@@ -260,59 +243,17 @@ public class ColorOutOfSpaceRender {
         ms.pop();
     }
     
-    public static boolean isLookingAtDirection(PlayerEntity player, BlockPos pos) {
-		
-		BlockPos playerPos = new BlockPos(player.getPosX(), player.getPosY(), player.getPosZ());
-		
-		if (CalcVector.getDirection(playerPos, pos) == null) {
-			if(player.rotationPitch > 0 && CalcVector.getVDirection(playerPos, pos).equals(Direction.DOWN) || 
-					player.rotationPitch < 0 && CalcVector.getVDirection(playerPos, pos).equals(Direction.UP)) {
-				playerPos = new BlockPos(player.getPosX(), pos.getY(), player.getPosZ());
-			}
-		}
-		if (playerPos.equals(pos) || player.getHorizontalFacing().equals(CalcVector.getDirection(playerPos, pos)) && playerPos.manhattanDistance(pos) < 16) {
-			return true;
-		}
-		return false;
-	}
+	public static void playSound(int sound) {
 
-	public static boolean isLookingAtPos(World worldIn, BlockPos pos) {
-		BlockPos blockpos = getMousePos();
-		return blockpos.equals(pos);
-	}
-	
-	public static BlockPos getMousePos() {
-		return ((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver).getPos();
-	}
-	
-	public static Screen getCurrentScreen() {
-    	return Minecraft.getInstance().currentScreen;
-    }
-	
-	public static boolean hasOptifine() {
+		ClientWorld world = Minecraft.getInstance().world;
+		ClientPlayerEntity player = Minecraft.getInstance().player;
+		BlockPos pos = player.getPosition();
 		
-		if (!ColorOutOfSpaceRender.optifineChecked) {
-			ColorOutOfSpaceRender.optifineChecked = true;
-			for (Map<String, String> mod : FMLLoader.modLauncherModList()) {
-				if (mod.get("name").toString().toLowerCase().equals("optifine")) {
-					ColorOutOfSpaceRender.optifinePresent = true;
-					break;
-				}
-			}
+		if (sound == Refs.curedMetSound) {
+			Random rand = new Random();
+	        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 10000.0F, 0.8F + rand.nextFloat() * 0.2F, false);
+	        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + rand.nextFloat() * 0.2F, false);
 		}
-		return ColorOutOfSpaceRender.optifinePresent;
-	}
-	
-	public static boolean isShadersActive() {
-		return (ColorOutOfSpaceRender.hasOptifine() || (!ForgeConfig.CLIENT.forgeLightPipelineEnabled.get() && !ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get()));
-	}
-
-	public static void stopSound() {
-		Minecraft.getInstance().getSoundHandler().stop();
-	}
-	
-	public static void resumeSound() {
-		Minecraft.getInstance().getSoundHandler().resume();
 	}
 }
 

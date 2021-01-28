@@ -2,6 +2,7 @@ package dev.alef.coloroutofspace.playerdata;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public interface IPlayerData {
 	
@@ -35,9 +36,18 @@ public interface IPlayerData {
 	public int getFallDay();
 	public void setFallDay(int fallDay, boolean randomize);
 	
-	public int getCureLevel();
-	public void setCureLevel(int cureLevel);
+	public int getMetDisableLevel();
+	public void setMetDisableLevel(int cureLevel);
 	
-	public void reset(PlayerEntity player, boolean destroyMet);
+	public boolean isMetDisabled();
+	public void setMetDisabled(boolean metCured);
+
+	public void resetMet(World worldIn, boolean destroyMet, boolean usedAntidote);
+	public void resetPlayer(boolean cured);
     public void copyForRespawn(IPlayerData deadPlayer);
+    
+	public void metFall(World worldIn, PlayerEntity player);
+	public void increaseMetRadius(World worldIn);
+	public void replanMetFall(int daysJoined);
+	public boolean checkMetDisableLevel();
 }

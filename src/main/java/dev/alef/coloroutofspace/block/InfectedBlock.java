@@ -5,7 +5,7 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.Util;
+import dev.alef.coloroutofspace.ColorOutOfSpace;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -25,7 +25,7 @@ public class InfectedBlock extends Block {
     public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
     	
     	if(!worldIn.isRemote) {
-    		Util.infect(worldIn, pos, entityIn);
+    		ColorOutOfSpace.Infection.infectEntity(worldIn, entityIn);
     	}
     	super.onEntityWalk(worldIn, pos, entityIn);
     }

@@ -3,8 +3,8 @@ package dev.alef.coloroutofspace.block;
 
 import java.util.Random;
 
+import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.Util;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -60,7 +60,7 @@ public class InfectedGrassBlock extends Block implements IGrowable {
    public void onEntityWalk(World worldIn, BlockPos pos, Entity entityIn) {
    	
 	   if (!worldIn.isRemote) {
-		   Util.infect(worldIn, pos, entityIn);
+		   ColorOutOfSpace.Infection.infectEntity(worldIn, entityIn);
 	   }
 	   super.onEntityWalk(worldIn, pos, entityIn);
    }

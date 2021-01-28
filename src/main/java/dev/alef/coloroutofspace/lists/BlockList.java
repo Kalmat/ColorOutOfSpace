@@ -1,7 +1,5 @@
 package dev.alef.coloroutofspace.lists;
 
-import java.util.function.ToIntFunction;
-
 import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.block.CuredBlock;
 import dev.alef.coloroutofspace.block.CuredMetBlock;
@@ -14,7 +12,6 @@ import dev.alef.coloroutofspace.block.InfectedWoodBlock;
 import dev.alef.coloroutofspace.block.MeteoriteBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
@@ -26,17 +23,15 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockList {
 	
-    private static ToIntFunction<BlockState> lightValueA = (p_235830_0_) -> {return 12;};
-    private static ToIntFunction<BlockState> lightValueB = (p_235830_0_) -> {return 7;};
-    public static final Block color_meteorite_block = new MeteoriteBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(1000000f, 1000000f).harvestLevel(1000).sound(SoundType.METAL).setLightLevel(lightValueA));
-    public static final Block color_infected_block = new InfectedBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(1000000f, 1000000f).setRequiresTool().harvestLevel(1000).setLightLevel(lightValueB));
-    public static final Block color_wood_block = new InfectedWoodBlock(Block.Properties.create(Material.WOOD).hardnessAndResistance(1000000f, 1000000f).setRequiresTool().harvestLevel(1000).setLightLevel(lightValueB));
-    public static final Block color_dirt_block = new InfectedDirtBlock(AbstractBlock.Properties.create(Material.EARTH, MaterialColor.NETHERRACK).setRequiresTool().hardnessAndResistance(1000000f, 1000000f).harvestLevel(1000).tickRandomly().setLightLevel(lightValueB));
-    public static final Block color_grass_block = new InfectedGrassBlock(AbstractBlock.Properties.create(Material.EARTH, MaterialColor.CRIMSON_NYLIUM).setRequiresTool().hardnessAndResistance(1000000f, 1000000f).harvestLevel(1000).tickRandomly().setLightLevel(lightValueB));
+    public static final Block color_meteorite_block = new MeteoriteBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().sound(SoundType.METAL).setLightLevel((state) -> { return 12; }));
+    public static final Block color_infected_block = new InfectedBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().setLightLevel((state) -> { return 7; }));
+    public static final Block color_wood_block = new InfectedWoodBlock(Block.Properties.create(Material.WOOD).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().setLightLevel((state) -> { return 7; }));
+    public static final Block color_dirt_block = new InfectedDirtBlock(AbstractBlock.Properties.create(Material.EARTH, MaterialColor.NETHERRACK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().tickRandomly().setLightLevel((state) -> { return 7; }));
+    public static final Block color_grass_block = new InfectedGrassBlock(AbstractBlock.Properties.create(Material.EARTH, MaterialColor.CRIMSON_NYLIUM).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().tickRandomly().setLightLevel((state) -> { return 7; }));
     public static final Block color_grass = new InfectedGrass(AbstractBlock.Properties.create(Material.NETHER_PLANTS, MaterialColor.NETHERRACK).doesNotBlockMovement().zeroHardnessAndResistance().sound(SoundType.NETHER_SPROUT));
-    public static final Block color_leaves_block = new InfectedLeavesBlock(AbstractBlock.Properties.create(Material.LEAVES).hardnessAndResistance(0.2F).sound(SoundType.PLANT).notSolid());
-    public static final Block color_cured_met_block = new CuredMetBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(0.4f, 0.4f).harvestLevel(0).sound(SoundType.METAL));
-    public static final Block color_cured_block = new CuredBlock(AbstractBlock.Properties.create(Material.ORGANIC, MaterialColor.PURPLE).hardnessAndResistance(0.6F).sound(SoundType.PLANT));
+    public static final Block color_leaves_block = new InfectedLeavesBlock(AbstractBlock.Properties.create(Material.LEAVES).hardnessAndResistance(0.2F).notSolid().sound(SoundType.PLANT));
+    public static final Block color_cured_met_block = new CuredMetBlock(Block.Properties.create(Material.EARTH).hardnessAndResistance(0.4f, 0.4f).harvestLevel(0).sound(SoundType.METAL));
+    public static final Block color_cured_block = new CuredBlock(AbstractBlock.Properties.create(Material.ROCK, MaterialColor.QUARTZ).hardnessAndResistance(0.6F).harvestLevel(0).sound(SoundType.GROUND));
     
     public static final DeferredRegister<Block> BLOCK_LIST = DeferredRegister.create(ForgeRegistries.BLOCKS, Refs.MODID);
     public static final RegistryObject<Block> METEORITE_BLOCK = BLOCK_LIST.register("color_meteorite_block", () -> color_meteorite_block);

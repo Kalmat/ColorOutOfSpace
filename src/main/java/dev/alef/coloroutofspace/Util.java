@@ -2,6 +2,7 @@ package dev.alef.coloroutofspace;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.annotation.Nullable;
@@ -9,14 +10,8 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import dev.alef.coloroutofspace.bot.MetBot;
-import dev.alef.coloroutofspace.entity.AntiPlayerEntity;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.lists.ItemList;
-import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketInfected;
-import dev.alef.coloroutofspace.playerdata.IPlayerData;
-import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.Enchantment;
@@ -27,9 +22,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.PotionEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.FilledMapItem;
@@ -38,170 +31,48 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.pathfinding.PathType;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.MapData;
+import net.minecraft.world.storage.MapDecoration;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class Util {
-	
+	  
 	private static final Logger LOGGER = LogManager.getLogger();
 	
 	public static final List<Potion> potions = new ArrayList<Potion>(ForgeRegistries.POTION_TYPES.getValues());
 	public static final List<Enchantment> enchantments = new ArrayList<Enchantment>(ForgeRegistries.ENCHANTMENTS.getValues());
 	public static final List<Structure<?>> structures = new ArrayList<Structure<?>>(ForgeRegistries.STRUCTURE_FEATURES.getValues());
 	
-	public static void infect(World worldIn, BlockPos pos, Entity entityIn) {
+	public static BlockPos getGroundLevel(World worldIn, BlockPos pos, boolean afterExplosion) {
 		
-		if (entityIn instanceof PlayerEntity) {
-    		
-    		PlayerEntity player = (PlayerEntity) entityIn;
-			IPlayerData playerData = PlayerData.getFromPlayer(player);
-			Util.applyInfectedEffects(player, playerData.getCureLevel(), true);
-			if (!playerData.isPlayerInfected()) {
-				playerData.setPlayerInfected(true);
-				Util.spawnAntiPlayer((ServerWorld) worldIn, player, playerData.getMetPos().up(), true);
-			}
-    	}
-    	else if (entityIn instanceof LivingEntity) {
-    		
-    		int i = Refs.entitiesToInfect.indexOf(entityIn.getType());
-
-			if (i >= 0 && ((LivingEntity) entityIn).getActivePotionEffects().size() == 0) {
-				
-				((LivingEntity) entityIn).setGlowing(true);
-				((LivingEntity) entityIn).setHealth(2.0F);
-				((LivingEntity) entityIn).addPotionEffect(new EffectInstance(Effects.INSTANT_DAMAGE, Refs.timeIncrease));
-				Entity spawnedEntity = Util.spawnEntity(worldIn, null, new BlockPos(entityIn.getPositionVec()).up(), Refs.infectedEntities.get(i), true, null);
-				spawnedEntity.setGlowing(true);
-			}
-			else if (Refs.difficulty == Refs.HARDCORE && entityIn instanceof MonsterEntity && !entityIn.hasCustomName()) {
-				entityIn.setGlowing(true);
-				Util.applyPersistence(entityIn, null);
-				// Even more hardcore: turn them all into ZOGLINGS!!!! (then keep anti-player jailed or they will fight each other)
-			}
-    	}
-	}
-	
-	public static LivingEntity spawnAntiPlayer(ServerWorld worldIn, PlayerEntity player, BlockPos pos, boolean jailed) {
-
-		if (jailed) {
-			MetBot metBot = new MetBot();
-			metBot.increaseInfectedArea(worldIn, player, pos, Refs.explosionRadius - 2, Refs.explosionRadius - 1, true);
-		}
-
-		Entity spawnedEntity = Util.spawnEntity(worldIn, null, pos, EntityList.color_anti_player, true, "Evil "+player.getScoreboardName());
-		for (ItemStack armor : player.getEquipmentAndArmor()) {
-			if (armor != null && !armor.equals(ItemStack.EMPTY)) {
-				spawnedEntity.setItemStackToSlot(MobEntity.getSlotForItemStack(armor), armor);
-			}
-		}
-		spawnedEntity.setGlowing(true);
-		if (Refs.difficulty == Refs.HARDCORE) {
-			((LivingEntity)spawnedEntity).addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE));
-		}
-		return (LivingEntity) spawnedEntity;
-	}
-	
-	public static void applyInfectedEffects(PlayerEntity player, int cureLevel, boolean firstTime) {
+		int i = 0;
 		
-		Networking.sendToClient(new PacketInfected(true, cureLevel), (ServerPlayerEntity) player);
-		if (firstTime) {
-			player.addPotionEffect(new EffectInstance(Effects.POISON, 200));
-		}
-		player.setGlowing(true);
-		player.addPotionEffect(new EffectInstance(Effects.BAD_OMEN, Refs.timeIncrease));
-	}
-
-	public static ItemStack getPotion(World worldIn, PlayerEntity player, BlockPos pos, Item potionItem) {
-        Potion potion = Util.getRandomPotion();
-        PotionEntity potionentity = new PotionEntity(worldIn, pos.getX(), pos.getY(), pos.getZ());
-        potionentity.setItem(PotionUtils.addPotionToItemStack(new ItemStack(potionItem), potion));
-        ItemStack stack = potionentity.getItem();
-        return stack;
-	}
-	
-	public static ItemStack getMap(World worldIn, PlayerEntity player, BlockPos pos, Item mapItem) {
-
-		int x = MathHelper.floor(player.getPosX());
-		int z = MathHelper.floor(player.getPosZ());
-		BlockPos structPos = null;
-		String structName = "Surroundings Map";
-		List<Object> retValues = new ArrayList<Object>();
-		retValues = Util.getRandomStructure(worldIn, pos, 96);
-		structPos = (BlockPos) retValues.get(0);
-
-		if (structPos != null) {
-			x = structPos.getX();
-			z = structPos.getZ();
-			structName = (String) retValues.get(1);
-		}
-		ItemStack stack = FilledMapItem.setupNewMap(worldIn, x, z, (byte) 0, true, true).setDisplayName(new TranslationTextComponent(structName));
-		return stack;
-	}
-	
-	public static Entity spawnEntity(World worldIn, @Nullable PlayerEntity player, BlockPos pos, EntityType<?> spawnEntity, boolean applyPersistence, @Nullable String name) {
-		
-		if (spawnEntity.equals(EntityType.LIGHTNING_BOLT) && player != null) {
-			pos = new BlockPos(player.getPositionVec());
-		}
-		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
-		if (applyPersistence) {
-			Util.applyPersistence(spawnedEntity, name);
-		}
-		return spawnedEntity;
-	}
-
-	public static void applyPersistence(Entity entity, String nameIn) {
-		
-		if (entity instanceof LivingEntity) {
-			
-			TextComponent name;
-			
-			if (nameIn == null || "".equals(nameIn)) {
-				Random rand = new Random();
-				name = new TranslationTextComponent(Refs.tagNames.get(rand.nextInt(Refs.tagNames.size())));
+		if (worldIn.canBlockSeeSky(pos)) {
+			while (i < worldIn.getHeight() && (worldIn.canBlockSeeSky(pos.down()) || (afterExplosion && !worldIn.getBlockState(pos.down()).isSolid()))) {
+				pos = pos.down();
+				++i;
 			}
-			else {
-				name = new TranslationTextComponent(nameIn);
-			}
-			
-			entity.setCustomName(name);
-			entity.setCustomNameVisible(true);
-			((MobEntity) entity).enablePersistence();
 		}
+		else {
+			while (i < worldIn.getHeight() && !worldIn.canBlockSeeSky(pos.down())) {
+				pos = pos.up();
+				++i;
+			} 
+		}
+		return pos;
 	}
 	
-	public static void dupEntity(World worldIn, @Nullable PlayerEntity player, BlockPos pos, Entity attacker, LivingEntity entity, boolean applyPersistence, @Nullable String name) {
-		
-		Random rand = new Random();
-		EntityType<?> spawnEntity = attacker.getType();
-		int chance = Refs.dupEntityChance;
-		if (Refs.aggressiveEntities.contains(spawnEntity)) {
-			chance = Refs.dupAggressiveChance;
-		}
-		if ((rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) && !(entity instanceof AntiPlayerEntity)) {
-			Entity spawnedEntity = Util.spawnEntity((ServerWorld) entity.world, null, new BlockPos(entity.getPositionVec()), spawnEntity, true, null);
-			spawnedEntity.setGlowing(true);
-		}
-	}
-	
-	public static void spawnFluid(World worldIn, PlayerEntity player, BlockPos pos, Fluid spawnBlock) {
-		worldIn.setBlockState(pos.up(), spawnBlock.getDefaultState().getBlockState(), 11);
-	}
-
 	public static void spawnItem(World worldIn, PlayerEntity player, BlockPos pos, Item spawnItem, boolean enchantAll, boolean enchantBooks, int enchantChance) {
 		
 		ItemStack stack = new ItemStack(spawnItem);
@@ -222,6 +93,36 @@ public class Util {
 		spawnItemEntity.entityDropItem(stack);
 	}
 	
+	public static ItemStack getPotion(World worldIn, PlayerEntity player, BlockPos pos, Item potionItem) {
+        Potion potion = Util.getRandomPotion();
+        PotionEntity potionentity = new PotionEntity(worldIn, pos.getX(), pos.getY(), pos.getZ());
+        potionentity.setItem(PotionUtils.addPotionToItemStack(new ItemStack(potionItem), potion));
+        ItemStack stack = potionentity.getItem();
+        return stack;
+	}
+	
+	public static ItemStack getMap(World worldIn, PlayerEntity player, BlockPos pos, Item mapItem) {
+
+		List<Object> retValues = Util.getRandomStructure(worldIn, pos, 96);
+		BlockPos structPos = (BlockPos) retValues.get(0);
+		String structName = "Surroundings Map";
+		ItemStack stack;
+
+		if (structPos == null) {
+			structPos = pos;
+	        stack = FilledMapItem.setupNewMap(worldIn, structPos.getX(), structPos.getZ(), (byte) 0, true, true);
+		}
+		else {
+			structName = (String) retValues.get(1);
+	        stack = FilledMapItem.setupNewMap(worldIn, structPos.getX(), structPos.getZ(), (byte) 2, true, true);
+	        MapData.addTargetDecoration(stack, structPos, "+", MapDecoration.Type.RED_X);
+		}
+        FilledMapItem.func_226642_a_((ServerWorld) worldIn, stack);
+        stack.setDisplayName(new TranslationTextComponent(structName.toLowerCase(Locale.ROOT)));
+        
+		return stack;
+	}
+	
 	public static ItemStack enchantItem(World worldIn, PlayerEntity player, BlockPos pos, Item enchantItem, int enchantChance) {
 
 		Random rand = new Random();
@@ -236,13 +137,67 @@ public class Util {
 		return stack;
 	}
 
-	public static void spawnMetSword(World worldIn, PlayerEntity player, boolean enchant) {
+	public static Entity spawnEntity(World worldIn, @Nullable PlayerEntity player, BlockPos pos, EntityType<?> spawnEntity, boolean applyPersistence, @Nullable String name) {
+		
+		if (spawnEntity.equals(EntityType.LIGHTNING_BOLT) && player != null) {
+			pos = player.getPosition();
+		}
+		else if (spawnEntity.equals(EntityType.GHAST)) {
+			pos = pos.up(16);
+		}
+		Entity spawnedEntity = spawnEntity.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
+		if (applyPersistence) {
+			Util.applyPersistence(spawnedEntity, name);
+		}
+		if (Refs.canBeRidden.contains(spawnEntity)) {
+			Entity spawnedRider = EntityList.color_brute.spawn((ServerWorld) worldIn, null, null, player, pos, SpawnReason.MOB_SUMMONED, false, false);
+			Util.applyPersistence(spawnedRider, name);
+			spawnedRider.startRiding(spawnedEntity, true);
+		}
+		return spawnedEntity;
+	}
+
+	public static void applyPersistence(Entity entity, String nameIn) {
+		
+		if (entity instanceof LivingEntity) {
+			
+			if (nameIn == null) {
+				Random rand = new Random();
+				nameIn = Refs.tagNames.get(rand.nextInt(Refs.tagNames.size()));
+			}
+			if (nameIn.length() != 0) {
+				entity.setCustomName(new TranslationTextComponent(nameIn));
+				entity.setCustomNameVisible(true);
+			}
+			((MobEntity) entity).enablePersistence();
+		}
+	}
+	
+	public static void dupEntity(World worldIn, @Nullable PlayerEntity player, BlockPos pos, Entity attacker, LivingEntity entity, boolean applyPersistence, @Nullable String name) {
+		
+		Random rand = new Random();
+		EntityType<?> spawnEntity = attacker.getType();
+		int chance = Refs.dupEntityChance;
+		if (Refs.aggressiveEntities.contains(spawnEntity)) {
+			chance = Refs.dupAggressiveChance;
+		}
+		if (rand.nextInt(chance) == 0 || Refs.difficulty == Refs.HARDCORE) {
+			Entity spawnedEntity = Util.spawnEntity(entity.world, null, entity.getPosition(), spawnEntity, true, null);
+			spawnedEntity.setGlowing(true);
+		}
+	}
+	
+	public static void spawnFluid(World worldIn, PlayerEntity player, BlockPos pos, Fluid spawnBlock) {
+		worldIn.setBlockState(pos.up(), spawnBlock.getDefaultState().getBlockState(), 11);
+	}
+
+	public static void spawnMetSword(World worldIn, BlockPos pos, boolean enchant) {
 		ItemStack stack = new ItemStack(ItemList.meteorite_sword);
 		if (enchant) {
 			Enchantment ench = Enchantments.FIRE_ASPECT;
 			stack.addEnchantment(ench, ench.getMaxLevel());
 		}
-		ItemEntity spawnItemEntity = new ItemEntity(worldIn, player.getPositionVec().x, player.getPositionVec().y, player.getPositionVec().z, stack);
+		ItemEntity spawnItemEntity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), stack);
 		spawnItemEntity.entityDropItem(stack);
 	}
 
@@ -260,15 +215,13 @@ public class Util {
 		int randNum = 0;
 		Item item = stack.getItem();
 		Enchantment ench = null;
-		Enchantment ench1 = null;
 		
 		if (item.isEnchantable(stack)) {
 			for (int i= 0; i < Util.enchantments.size(); ++i) {
 				randNum = rand.nextInt(Util.enchantments.size());
-				ench1 =  Util.enchantments.get(randNum);
-				if ((item.equals(Items.BOOK) && ench1.isAllowedOnBooks()) ||
-						(!item.equals(Items.BOOK) && ench1.canApply(stack))) {
-					ench = ench1;
+				ench =  Util.enchantments.get(randNum);
+				if ((item.equals(Items.BOOK) && ench.isAllowedOnBooks()) ||
+						(!item.equals(Items.BOOK) && ench.canApply(stack))) {
 					break;
 				}
 			}
@@ -280,6 +233,7 @@ public class Util {
 		
 		Random rand = new Random();
 		Structure<?> struct;
+		BlockPos structPos;
 		List<Object> retValues = new ArrayList<Object>();
 		retValues.add(null);
 		retValues.add("");
@@ -288,8 +242,9 @@ public class Util {
 		for (int i= 0; i < Util.structures.size(); ++i) {
 			randNum = rand.nextInt(Util.structures.size());
 			struct = Util.structures.get(randNum);
-			if (struct != null) {
-				retValues.set(0, ((ServerWorld) worldIn).func_241117_a_(struct, pos, radius, false));
+			structPos = ((ServerWorld) worldIn).func_241117_a_(struct, pos, radius, false);
+			if (structPos != null) {
+				retValues.set(0, structPos);
 				retValues.set(1, struct.getStructureName());
 				break;
 			}
@@ -305,7 +260,7 @@ public class Util {
 		
 		for (Property<?> prop : properties) {
 			try {
-				targetState = targetState.with(Util.convertInstanceOfObject(prop, prop.getClass()), Util.convertInstanceOfObject(stateToClone.getValues().get(prop), stateToClone.getValues().get(prop).getClass()));
+				targetState = targetState.with(Util.castObject(prop, prop.getClass()), Util.castObject(stateToClone.getValues().get(prop), stateToClone.getValues().get(prop).getClass()));
 			}
 			catch(Exception e) {
 				LOGGER.info("Property can not be applied to target state "+prop.getName());
@@ -314,19 +269,19 @@ public class Util {
 		return targetState;
 	}
 	
-	public static ResourceLocation cloneSkin(World worldIn, PlayerEntity player, Entity mob, BlockPos pos) {
-		Minecraft mc = Minecraft.getInstance();
-		ResourceLocation skin1 = mc.player.getLocationSkin();
-		return skin1;
-	}
-	
-	public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
+	public static <T> T castObject(Object o, Class<T> clazz) {
 	    try {
 	        return clazz.cast(o);
 	    } 
 	    catch(ClassCastException e) {
 	    	return null;
 	    }
+	}
+	
+	public static ResourceLocation cloneSkin(PlayerEntity player) {
+		Minecraft mc = Minecraft.getInstance();
+		ResourceLocation skin1 = mc.player.getLocationSkin();
+		return skin1;
 	}
 	
 	public static boolean hasNotSolidAround(World worldIn, BlockPos blockPos) {

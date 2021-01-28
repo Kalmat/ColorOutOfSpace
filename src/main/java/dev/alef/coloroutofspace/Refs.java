@@ -27,21 +27,19 @@ public class Refs {
 	public static final int HARDCORE = 1;
 	
 	public static final int daysToFall = 5;
-	public static final int graceDaysToFall = 10;
+	public static final int graceDaysToFall = 5;
 	public static final int explosionRadius = 5;
-	public static final int timeIncrease = 6000; // 24000 = one day (clock not increasing while sleeping)
+	public static final int timeIncrease = 6000; 		// 24000 = one day (clock not increasing while sleeping)
 	public static final int radiusIncrease = 3;
 	public static final int infectRadiusLimit = 60;
-	public static final boolean limitCureTime = false;
 	public static final int cureMaxLevel = 20;
 	
-	public static final int infectedGrassChance = 3; // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final int lootChance = 20;  // 3/x Item - 2/x Entity - 1/x Water/Lava - (x-6)/x Default (Lepisma/Nothing)
-	public static final int enchantabilityChance = 2; // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final boolean spawnDefaultLootEntity = true;
+	public static final int infectedGrassChance = 3;	// 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int lootChance = 20;  			// 4/x Item - 2/x Entity - 1/x Water/Lava - (x-6)/x Default (Lepisma/Nothing)
 	public static final int spawnDefaultLootChance = 4; // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final int dupEntityChance = 1;  // 1/x Chance (1 = 100%, 2 = 50%, ...)
-	public static final int dupAggressiveChance = 5;  // 1/x Chance (1 = 100%, 2 = 50%, ...) - For Zoglins, Guardians and Elder Guardians
+	public static final int enchantabilityChance = 2; 	// 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int dupEntityChance = 1;  		// 1/x Chance (1 = 100%, 2 = 50%, ...)
+	public static final int dupAggressiveChance = 5;  	// 1/x Chance (1 = 100%, 2 = 50%, ...) - For Zoglins, Guardians and Elder Guardians
 	
 	public static final BlockState meteoriteState = BlockList.color_meteorite_block.getDefaultState();
 	public static final BlockState infectedState = BlockList.color_infected_block.getDefaultState();
@@ -57,6 +55,8 @@ public class Refs {
 	public static final BlockState infectedBedState = Blocks.PURPLE_BED.getDefaultState();
 	public static final BlockState infectedGlassState = Blocks.PURPLE_STAINED_GLASS.getDefaultState();
 	public static final BlockState infectedGlassPaneState = Blocks.PURPLE_STAINED_GLASS_PANE.getDefaultState();
+	public static final BlockState infectedStairsState = Blocks.PURPUR_STAIRS.getDefaultState();
+	public static final BlockState infectedSlabState = Blocks.PURPUR_SLAB.getDefaultState();
 	public static final BlockState infectedTorchState = Blocks.REDSTONE_TORCH.getDefaultState();
 	public static final BlockState infectedWallTorchState = Blocks.REDSTONE_WALL_TORCH.getDefaultState();
 	
@@ -66,6 +66,10 @@ public class Refs {
 	public static final Color waterColor = new Color(0x62529E); // end-water color
 	
 	public static final String soulsCollectedMsg = "Souls Collected";
+	public static final String allSoulsCollectedMsg = "ALL souls Collected!";
+	public static final String mineMetMsg = "Harvest Meteorite";
+	
+	public static final int curedMetSound = 0;
 	
 	public static final List<String> tagNames = Arrays.asList(
 			"Take me to your leader",
@@ -111,20 +115,6 @@ public class Refs {
 			BlockList.color_grass_block,
 			BlockList.color_wood_block,
 			BlockList.color_dirt_block
-	);
-	
-	public static final List<Block> dirtsList = Arrays.asList(
-			Blocks.DIRT,
-			Blocks.COARSE_DIRT,
-			Blocks.GRASS_BLOCK,
-			Blocks.PODZOL,
-			Blocks.MYCELIUM
-	);
-	
-	public static final List<Block> chestsList = Arrays.asList(
-			Blocks.CHEST,
-			Blocks.ENDER_CHEST,
-			Blocks.TRAPPED_CHEST
 	);
 	
 	public static final List<EntityType<?>> souls = Arrays.asList(
@@ -249,8 +239,8 @@ public class Refs {
 			EntityType.HUSK,
 			EntityList.color_brute,
 			EntityType.RAVAGER,
-			EntityType.BLAZE,
 			EntityType.SHULKER,
+			EntityType.BLAZE,
 			EntityType.GHAST,
 			EntityType.GHAST,
 			EntityType.MAGMA_CUBE,
@@ -276,6 +266,12 @@ public class Refs {
 			EntityType.SHULKER,
 			EntityType.VEX,
 			EntityType.GUARDIAN
+	);
+	
+	public static final List<EntityType<?>> canBeRidden = Arrays.asList(
+			EntityType.ZOMBIE_HORSE,
+			EntityType.SKELETON_HORSE,
+			EntityType.STRIDER
 	);
 	
 	public static final List<EntityType<?>> infectedDupEntities = Arrays.asList(

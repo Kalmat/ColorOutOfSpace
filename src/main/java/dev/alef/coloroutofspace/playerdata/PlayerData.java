@@ -2,16 +2,21 @@ package dev.alef.coloroutofspace.playerdata;
 
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import dev.alef.coloroutofspace.Refs;
-import dev.alef.coloroutofspace.network.Networking;
-import dev.alef.coloroutofspace.network.PacketInfected;
+import dev.alef.coloroutofspace.bot.MetBot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 
 public class PlayerData implements IPlayerData {
+	
+	@SuppressWarnings("unused")
+	private static final Logger LOGGER = LogManager.getLogger();
 	
 	private BlockPos metPos;
 	private BlockPos bedPos;
@@ -23,7 +28,8 @@ public class PlayerData implements IPlayerData {
 	private boolean playerCured;
 	private boolean metActive;
 	private int prevRadius;
-	private int cureLevel;
+	private int metDisableLevel;
+	private boolean metDisabled;
 	
 	public PlayerData() {
 		this.setFirstJoin(0);
@@ -35,8 +41,9 @@ public class PlayerData implements IPlayerData {
 		this.setMetActive(false);
 		this.setPrevRadius(0);
 		this.setPlayerInfected(false);
-		this.setCureLevel(0);
+		this.setMetDisableLevel(0);
 		this.setPlayerCured(false);
+		this.setMetDisabled(false);
 	}
 	
 	public long getFirstJoin() {
@@ -60,8 +67,11 @@ public class PlayerData implements IPlayerData {
 	}
 
 	public void setFallDay(int fallDay, boolean randomize) {
-		Random rand = new Random();
-		this.fallDay = fallDay + rand.nextInt(Refs.graceDaysToFall);
+		this.fallDay = fallDay;
+		if (randomize) {
+			Random rand = new Random();
+			this.fallDay += rand.nextInt(Refs.graceDaysToFall);
+		}
 	}
 
 	public BlockPos getFallPos() {
@@ -69,10 +79,10 @@ public class PlayerData implements IPlayerData {
 	}
 
 	public void setFallPos(BlockPos pos, boolean randomize) {
-		if (randomize && fallPos != null) {
+		if (randomize && pos != null) {
 			Random rand1 = new Random();
 			Random rand2 = new Random();
-			int offset = rand1.nextInt(10) + 5;
+			int offset = rand1.nextInt(5) + 7;
 			pos = new BlockPos(pos.offset(Direction.byHorizontalIndex(rand2.nextInt(4)), offset));
 		}
 		this.fallPos = pos;
@@ -118,12 +128,12 @@ public class PlayerData implements IPlayerData {
 		this.playerInfected = playerInfected;
 	}
 
-	public int getCureLevel() {
-		return cureLevel;
+	public int getMetDisableLevel() {
+		return metDisableLevel;
 	}
 
-	public void setCureLevel(int cureLevel) {
-		this.cureLevel = cureLevel;
+	public void setMetDisableLevel(int disableLevel) {
+		this.metDisableLevel = disableLevel;
 	}
 
 	public boolean isPlayerCured() {
@@ -134,33 +144,77 @@ public class PlayerData implements IPlayerData {
 		this.playerCured = playerCured;
 	}
 
-	public void reset(PlayerEntity player, boolean destroyMet) {
+	public boolean isMetDisabled() {
+		return metDisabled;
+	}
+
+	public void setMetDisabled(boolean metCured) {
+		this.metDisabled = metCured;
+	}
+
+	public void metFall(World worldIn, PlayerEntity player) {
 		
-		if (destroyMet && this.getMetPos() != null) {
-			player.world.destroyBlock(this.getMetPos(), false);
+		if (this.getFallPos() == null) {
+			this.setFallPos(player.getPosition(), true);
 		}
-		this.setFirstJoin(0);
-		this.setFallPos(null, false);
-		this.setFallDay(-1, false);
-		this.setMetPos(null);
-		this.setMetFallen(false);
-		this.setMetActive(false);
-		this.setPrevRadius(0);
-		this.setPlayerInfected(false);
-		this.setCureLevel(0);
-		this.setPlayerCured(false);
-		Networking.sendToClient(new PacketInfected(false, 0), (ServerPlayerEntity) player);
+		MetBot metBot = new MetBot();
+		BlockPos fallPos = metBot.dropMet(worldIn, this.getFallPos());
+		this.resetMet(worldIn, false, false);
+		this.setMetPos(fallPos);
+		this.setMetFallen(true);
+		this.setMetActive(true);
+		this.setPrevRadius(Refs.radiusIncrease);
 	}
 	
-    public static IPlayerData getFromPlayer(PlayerEntity player) {
-        return player
-                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap, null)
-                .orElseThrow(()->new IllegalArgumentException("LazyOptional must be not empty!"));
-    }
+	public void increaseMetRadius(World worldIn) {
+		int radius = this.getPrevRadius() + Refs.radiusIncrease;
+		MetBot metBot = new MetBot();
+		metBot.infectArea(worldIn, this.getMetPos(), this.getPrevRadius(), radius, false);
+		this.setPrevRadius(radius);
+	}
+	
+	public void replanMetFall(int daysJoined) {
+		this.setMetActive(false);
+		this.setFallDay(daysJoined + Refs.daysToFall, true);
+	}
     
+	public boolean checkMetDisableLevel() {
+		
+		this.setMetDisableLevel(this.getMetDisableLevel() + 1);
+		boolean justMetCured = false;
+
+		if (this.getMetDisableLevel() == Refs.cureMaxLevel) {
+			this.setMetActive(false);
+			this.setMetDisabled(true);
+			justMetCured = true;
+		}
+		return justMetCured;
+	}
+
+	public void resetMet(World worldIn, boolean destroyMet, boolean usedAntidote) {
+		
+		if (this.getMetPos() != null) {
+			MetBot metBot = new MetBot();
+			metBot.uninfectArea(worldIn, this.getMetPos(), this.getPrevRadius(), usedAntidote);
+		}
+		if (destroyMet) {
+			this.setMetPos(null);
+		}
+		this.setMetFallen(false);
+		this.setMetActive(false);
+		this.setFallDay(-1, false);
+		this.setPrevRadius(0);
+		this.setMetDisabled(false);
+	}
+	
+	public void resetPlayer(boolean cured) {
+		this.setPlayerInfected(false);
+		this.setMetDisableLevel(0);
+		this.setPlayerCured(cured);
+	}
+	
     @Override
     public void copyForRespawn(IPlayerData deadPlayer){
-
         this.setFirstJoin(deadPlayer.getFirstJoin());
         this.setBedPos(deadPlayer.getBedPos());
         this.setFallPos(deadPlayer.getFallPos(), false);
@@ -170,11 +224,17 @@ public class PlayerData implements IPlayerData {
         this.setMetActive(deadPlayer.isMetActive());
         this.setPrevRadius(deadPlayer.getPrevRadius());
         this.setPlayerInfected(deadPlayer.isPlayerInfected());
-        this.setCureLevel(deadPlayer.getCureLevel());
+        this.setMetDisableLevel(deadPlayer.getMetDisableLevel());
         this.setPlayerCured(deadPlayer.isPlayerCured());
     }
     
-    public static void registerPlayerCapability() {
+    public static IPlayerData getFromPlayer(PlayerEntity player) {
+        return player
+                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap, null)
+                .orElseThrow(() -> new IllegalArgumentException("LazyOptional Capability must not be empty! "+player.getScoreboardName()));
+    }
+    
+	public static void registerPlayerCapability() {
     	CapabilityManager.INSTANCE.register(IPlayerData.class, new PlayerDataStorage(), PlayerData::new);
     }
 }

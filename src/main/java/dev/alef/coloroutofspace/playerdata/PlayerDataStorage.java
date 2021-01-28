@@ -31,7 +31,7 @@ public class PlayerDataStorage implements Capability.IStorage<IPlayerData> {
         tag.putBoolean("PI", instance.isPlayerInfected());
         tag.putBoolean("MA", instance.isMetActive());
         tag.putInt("PR", instance.getPrevRadius());
-        tag.putInt("SC", instance.getCureLevel());
+        tag.putInt("SC", instance.getMetDisableLevel());
         tag.putBoolean("PC", instance.isPlayerCured());
         return tag;
     }
@@ -75,7 +75,7 @@ public class PlayerDataStorage implements Capability.IStorage<IPlayerData> {
         instance.setPlayerInfected(tag.getBoolean("PI"));
         instance.setMetActive(tag.getBoolean("MA"));
         instance.setPrevRadius(tag.getInt("PR"));
-        instance.setCureLevel(tag.getInt("SC"));
+        instance.setMetDisableLevel(tag.getInt("SC"));
         instance.setPlayerCured(tag.getBoolean("PC"));
     }
 }

@@ -18,8 +18,8 @@ public class ConfigFile {
         public General(ForgeConfigSpec.Builder builder) {
             builder.push("General");
             Difficulty = builder
-                    .comment("Difficulty [0-Normal / 1-Hardcore | default:0]")
-                    .define("difficulty", 0);
+                    .comment("Difficulty [0 - Normal / 1 - Hardcore | default: 0]")
+                    .define("Difficulty", 0);
             builder.pop();
         }
     }
