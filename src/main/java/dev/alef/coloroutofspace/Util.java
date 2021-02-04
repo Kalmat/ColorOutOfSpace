@@ -56,19 +56,21 @@ public class Util {
 	
 	public static BlockPos getGroundLevel(World worldIn, BlockPos pos, boolean afterExplosion) {
 		
-		int i = 0;
-		
 		if (worldIn.canBlockSeeSky(pos)) {
-			while (i < worldIn.getHeight() && (worldIn.canBlockSeeSky(pos.down()) || (afterExplosion && !worldIn.getBlockState(pos.down()).isSolid()))) {
+			for (int i = 0; i < worldIn.getHeight(); ++i) {
+				if (!worldIn.canBlockSeeSky(pos.down()) || (afterExplosion && worldIn.getBlockState(pos.down()).isSolid())) {
+					return pos;
+				}
 				pos = pos.down();
-				++i;
 			}
 		}
 		else {
-			while (i < worldIn.getHeight() && !worldIn.canBlockSeeSky(pos.down())) {
+			for (int i = 0; i < worldIn.getHeight(); ++i) {                          
 				pos = pos.up();
-				++i;
-			} 
+				if (worldIn.canBlockSeeSky(pos.down())) {
+					return pos;
+				}
+			}
 		}
 		return pos;
 	}
@@ -157,7 +159,7 @@ public class Util {
 		return spawnedEntity;
 	}
 
-	public static void applyPersistence(Entity entity, String nameIn) {
+	public static void applyPersistence(Entity entity, @Nullable String nameIn) {
 		
 		if (entity instanceof LivingEntity) {
 			
@@ -170,6 +172,12 @@ public class Util {
 				entity.setCustomNameVisible(true);
 			}
 			((MobEntity) entity).enablePersistence();
+			if (((LivingEntity) entity).isEntityUndead()) {
+				ItemStack stack = new ItemStack(Items.DIAMOND_HELMET);
+				stack.addEnchantment(Enchantments.PROTECTION, Enchantments.PROTECTION.getMaxLevel());
+				stack.addEnchantment(Enchantments.UNBREAKING, Enchantments.UNBREAKING.getMaxLevel());
+				entity.setItemStackToSlot(MobEntity.getSlotForItemStack(stack), stack);
+			}
 		}
 	}
 	

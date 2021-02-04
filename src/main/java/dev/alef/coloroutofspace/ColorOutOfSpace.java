@@ -1,7 +1,5 @@
 package dev.alef.coloroutofspace;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,13 +34,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -75,10 +71,8 @@ public class ColorOutOfSpace {
         MinecraftForge.EVENT_BUS.register(new onPlayerCloneListener());
         MinecraftForge.EVENT_BUS.register(new onWorldTickListener());
         MinecraftForge.EVENT_BUS.register(new onBlockBreakListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerSleepListener());
         MinecraftForge.EVENT_BUS.register(new onPlayerWakeUpListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerHitListener());
-        MinecraftForge.EVENT_BUS.register(new onHitEntityListener());
+        MinecraftForge.EVENT_BUS.register(new onAttackEntityListener());
         MinecraftForge.EVENT_BUS.register(new onLivingDeathListener());
         MinecraftForge.EVENT_BUS.register(new onRenderGameOverlayListener());
         
@@ -155,7 +149,7 @@ public class ColorOutOfSpace {
     public class onPlayerCloneListener {
         
 		@SubscribeEvent
-        public void PlayerClone(final PlayerEvent.Clone event) {
+        public void PlayerClone(final Clone event) {
 			
 			PlayerEntity origPlayer = event.getOriginal();
 			PlayerEntity player = event.getPlayer();
@@ -202,7 +196,7 @@ public class ColorOutOfSpace {
 
 						if (playerData.getPrevRadius() < Refs.infectRadiusLimit) {
 							playerData.increaseMetRadius(world);
-						}
+						}  
 						else if (!playerData.isPlayerCured()) {
 							if (Refs.difficulty == Refs.HARDCORE) {
 								ColorOutOfSpace.Infection.curePlayer(world, player, playerData, false);
@@ -211,31 +205,10 @@ public class ColorOutOfSpace {
 							playerData.replanMetFall(daysJoined);
 						}
 					}
-					else if (daysJoined > playerData.getFallDay() && playerData.getFallDay() > 0 && !playerData.isPlayerCured() && 
-					   (!playerData.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE)) {
+					else if (playerData.canMetFall(world, daysJoined)) {
 						playerData.metFall(world, player);
 					}
 				}
-			}
-		}
-    }
-    
-	// CLIENT & SERVER
-    public class onPlayerSleepListener {
-        
-		@SubscribeEvent
-        public void PlayerSleep(final PlayerSleepInBedEvent event) {
-			
-			PlayerEntity player = event.getPlayer();
-			World world = player.world;
-			
-			if (!world.isRemote) {
-
-				BlockPos bedPos = player.getPosition();
-				IPlayerData playerData = PlayerData.getFromPlayer(player);
-				
-				playerData.setBedPos(bedPos);
-				playerData.setFallPos(bedPos, true);
 			}
 		}
     }
@@ -250,62 +223,52 @@ public class ColorOutOfSpace {
 			World world = player.world;
 			
 			if (!world.isRemote) {
-
+				
 				IPlayerData playerData = PlayerData.getFromPlayer(player);
+
+				BlockPos bedPos = player.getPosition();
+				playerData.setBedPos(bedPos);
+				playerData.setFallPos(bedPos, true);
+
 				int daysJoined = ((int) (world.getGameTime() - playerData.getFirstJoin())) / 24000;
 				
-				if (daysJoined >= playerData.getFallDay() && playerData.getFallDay() > 0 && 
-					!playerData.isMetFallen() && !playerData.isPlayerCured() &&
-				   (!playerData.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE)) {
+				if (playerData.canMetFall(world, daysJoined)) {
 					playerData.metFall(world, player);
 				}
 			}
 		}
     }
     
-    // SERVER
-    public class onPlayerHitListener {
-        
-		@SubscribeEvent
-        public void PlayerHit(final LivingHurtEvent event) {
-			
-			if (event.getEntityLiving() instanceof PlayerEntity) {
-				
-				PlayerEntity playerAttacked = (PlayerEntity) event.getEntityLiving();
-				
-				if (event.getSource().getTrueSource() instanceof PlayerEntity) {
-
-					IPlayerData playerData = PlayerData.getFromPlayer(playerAttacked);
-					PlayerEntity playerAttacking = (PlayerEntity) event.getSource().getTrueSource();
-
-					if (playerData.isPlayerInfected()) {
-						playerAttacking.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
-					}
-
-					playerData = PlayerData.getFromPlayer(playerAttacking);
-					
-					if (playerData.isPlayerInfected()) {
-						playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
-					}
-				}
-			}
-		}
-    }
-
     // CLIENT & SERVER
-	public class onHitEntityListener {
+	public class onAttackEntityListener {
 		
 	    @SubscribeEvent
-        public void onHitEntity(AttackEntityEvent event) {
+        public void AttackEntity(AttackEntityEvent event) {
         	
 	    	Entity target = event.getTarget();
-        	PlayerEntity player = (PlayerEntity) event.getPlayer();
-        	
-        	Item itemInMainHand = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND).getStack().getItem();
+			PlayerEntity playerAttacking = event.getPlayer();
+			
+        	Item itemInMainHand = playerAttacking.getItemStackFromSlot(EquipmentSlotType.MAINHAND).getStack().getItem();
         	
     		if (itemInMainHand.equals(ItemList.meteorite_sword) && Refs.difficulty != Refs.HARDCORE) {
-    			Util.knockback(player, target, MeteoriteSwordTier.getKnockback());
+    			Util.knockback(playerAttacking, target, MeteoriteSwordTier.getKnockback());
         	}
+    		
+    		if (target instanceof PlayerEntity) {
+    			
+    			PlayerEntity playerAttacked = (PlayerEntity) target;
+				IPlayerData playerData = PlayerData.getFromPlayer(playerAttacked);
+
+				if (playerData.isPlayerInfected()) {
+					playerAttacking.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
+				}
+
+				playerData = PlayerData.getFromPlayer(playerAttacking);
+				
+				if (playerData.isPlayerInfected()) {
+					playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
+				}
+    		}
 		}
 	}
 
@@ -313,7 +276,7 @@ public class ColorOutOfSpace {
     public class onLivingDeathListener {
         
 		@SubscribeEvent
-        public void LivingDeath(final LivingDeathEvent event) throws IOException {
+        public void LivingDeath(final LivingDeathEvent event) {
 			
 			LivingEntity entity = event.getEntityLiving();
 			Entity attacker = event.getSource().getTrueSource();
@@ -343,16 +306,13 @@ public class ColorOutOfSpace {
 	public class onBlockBreakListener {
 		
 		@SubscribeEvent
-		public void BlockBreak(final BlockEvent.BreakEvent event) {
+		public void BlockBreak(final BreakEvent event) {
 
-			PlayerEntity player = event.getPlayer();
-			World world = player.world;
+			IPlayerData playerData = PlayerData.getFromPlayer(event.getPlayer());
 			
-			IPlayerData playerData = PlayerData.getFromPlayer(player);
-			
-    		if (playerData.isPlayerInfected() && !event.getState().equals(Refs.curedMetState) && 
-    				!playerData.isMetDisabled() && !playerData.getMetPos().equals(event.getPos())) {
-    			world.destroyBlock(event.getPos(), false);
+			if (playerData.isPlayerInfected() &&
+    		   (!event.getState().equals(Refs.curedMetState) || !playerData.isMetDisabled() || !playerData.getMetPos().equals(event.getPos()))) {
+    			event.getWorld().destroyBlock(event.getPos(), false);
     		}
 		}
 	}

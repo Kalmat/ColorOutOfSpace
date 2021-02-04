@@ -10,6 +10,7 @@ import dev.alef.coloroutofspace.bot.MetBot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 
@@ -33,17 +34,17 @@ public class PlayerData implements IPlayerData {
 	
 	public PlayerData() {
 		this.setFirstJoin(0);
-		this.setBedPos(null);
 		this.setFallDay(-1, false);
+		this.setBedPos(null);
 		this.setFallPos(null, false);
 		this.setMetPos(null);
 		this.setMetFallen(false);
 		this.setMetActive(false);
 		this.setPrevRadius(0);
-		this.setPlayerInfected(false);
 		this.setMetDisableLevel(0);
-		this.setPlayerCured(false);
 		this.setMetDisabled(false);
+		this.setPlayerInfected(false);
+		this.setPlayerCured(false);
 	}
 	
 	public long getFirstJoin() {
@@ -120,20 +121,28 @@ public class PlayerData implements IPlayerData {
 		this.prevRadius = prevRadius;
 	}
 
-	public boolean isPlayerInfected() {
-		return playerInfected;
-	}
-
-	public void setPlayerInfected(boolean playerInfected) {
-		this.playerInfected = playerInfected;
-	}
-
 	public int getMetDisableLevel() {
 		return metDisableLevel;
 	}
 
 	public void setMetDisableLevel(int disableLevel) {
 		this.metDisableLevel = disableLevel;
+	}
+
+	public boolean isMetDisabled() {
+		return metDisabled;
+	}
+
+	public void setMetDisabled(boolean metCured) {
+		this.metDisabled = metCured;
+	}
+	
+	public boolean isPlayerInfected() {
+		return playerInfected;
+	}
+
+	public void setPlayerInfected(boolean playerInfected) {
+		this.playerInfected = playerInfected;
 	}
 
 	public boolean isPlayerCured() {
@@ -144,12 +153,11 @@ public class PlayerData implements IPlayerData {
 		this.playerCured = playerCured;
 	}
 
-	public boolean isMetDisabled() {
-		return metDisabled;
-	}
-
-	public void setMetDisabled(boolean metCured) {
-		this.metDisabled = metCured;
+	public boolean canMetFall(World worldIn, int daysJoined) {
+		return daysJoined >= this.getFallDay() && this.getFallDay() > 0 && 
+				!this.isMetActive() && !this.isMetDisabled() &&
+				!this.isPlayerCured() && (!this.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE) &&
+				worldIn.getDimensionKey().equals(DimensionType.OVERWORLD);
 	}
 
 	public void metFall(World worldIn, PlayerEntity player) {
@@ -216,15 +224,16 @@ public class PlayerData implements IPlayerData {
     @Override
     public void copyForRespawn(IPlayerData deadPlayer){
         this.setFirstJoin(deadPlayer.getFirstJoin());
+        this.setFallDay(deadPlayer.getFallDay(), false);
         this.setBedPos(deadPlayer.getBedPos());
         this.setFallPos(deadPlayer.getFallPos(), false);
-        this.setFallDay(deadPlayer.getFallDay(), false);
         this.setMetPos(deadPlayer.getMetPos());
         this.setMetFallen(deadPlayer.isMetFallen());
         this.setMetActive(deadPlayer.isMetActive());
         this.setPrevRadius(deadPlayer.getPrevRadius());
-        this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setMetDisableLevel(deadPlayer.getMetDisableLevel());
+		this.setMetDisabled(deadPlayer.isMetDisabled());
+        this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setPlayerCured(deadPlayer.isPlayerCured());
     }
     

@@ -118,9 +118,9 @@ public class ColorEntityBrain extends PiglinBruteBrain {
 
    protected static void func_242353_a(ColorEntity p_242353_0_, LivingEntity p_242353_1_) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
       if (!(p_242353_1_ instanceof AbstractColorEntity)) {
-    	  //ColorEntityBrain.method.setAccessible(true);
-    	  ColorEntityBrain.method.invoke(PiglinTasks.class, p_242353_0_, p_242353_1_);
-    	  //PiglinTasks.func_234509_e_(p_242353_0_, p_242353_1_);
+		  //ColorEntityBrain.method.setAccessible(true);
+		  ColorEntityBrain.method.invoke(PiglinTasks.class, p_242353_0_, p_242353_1_);
+		  //PiglinTasks.func_234509_e_(p_242353_0_, p_242353_1_);
       }
    }
 

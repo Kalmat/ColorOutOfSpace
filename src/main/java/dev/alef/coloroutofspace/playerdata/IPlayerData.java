@@ -46,6 +46,7 @@ public interface IPlayerData {
 	public void resetPlayer(boolean cured);
     public void copyForRespawn(IPlayerData deadPlayer);
     
+	public boolean canMetFall(World worldIn, int daysJoined);
 	public void metFall(World worldIn, PlayerEntity player);
 	public void increaseMetRadius(World worldIn);
 	public void replanMetFall(int daysJoined);

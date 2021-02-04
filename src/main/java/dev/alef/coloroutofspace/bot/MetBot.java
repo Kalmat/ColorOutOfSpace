@@ -41,7 +41,7 @@ public class MetBot {
 	public BlockPos dropMet(World worldIn, BlockPos fallPos) {
 		
 		fallPos = Util.getGroundLevel(worldIn, fallPos, false);
-		boolean fire = Refs.difficulty == Refs.HARDCORE ? true : false;
+		boolean fire = (Refs.difficulty == Refs.HARDCORE);
 		worldIn.createExplosion(null, fallPos.getX(), fallPos.getY(), fallPos.getZ(), Refs.explosionRadius, fire, Explosion.Mode.DESTROY);
 		
 		fallPos = Util.getGroundLevel(worldIn, fallPos, true);

@@ -28,10 +28,11 @@ public class PlayerDataStorage implements Capability.IStorage<IPlayerData> {
         tag.putLong("FJ", instance.getFirstJoin());
         tag.putInt("FD", instance.getFallDay());
         tag.putBoolean("MF", instance.isMetFallen());
-        tag.putBoolean("PI", instance.isPlayerInfected());
         tag.putBoolean("MA", instance.isMetActive());
         tag.putInt("PR", instance.getPrevRadius());
         tag.putInt("SC", instance.getMetDisableLevel());
+        tag.putBoolean("MD", instance.isMetDisabled());
+        tag.putBoolean("PI", instance.isPlayerInfected());
         tag.putBoolean("PC", instance.isPlayerCured());
         return tag;
     }
@@ -72,10 +73,11 @@ public class PlayerDataStorage implements Capability.IStorage<IPlayerData> {
         else {
             instance.setFallDay(-1, false);
         }
-        instance.setPlayerInfected(tag.getBoolean("PI"));
         instance.setMetActive(tag.getBoolean("MA"));
         instance.setPrevRadius(tag.getInt("PR"));
         instance.setMetDisableLevel(tag.getInt("SC"));
+        instance.setMetDisabled(tag.getBoolean("MD"));
+        instance.setPlayerInfected(tag.getBoolean("PI"));
         instance.setPlayerCured(tag.getBoolean("PC"));
     }
 }
