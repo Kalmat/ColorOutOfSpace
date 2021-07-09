@@ -10,7 +10,6 @@ import dev.alef.coloroutofspace.bot.MetBot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 
@@ -157,7 +156,7 @@ public class PlayerData implements IPlayerData {
 		return daysJoined >= this.getFallDay() && this.getFallDay() > 0 && 
 				!this.isMetActive() && !this.isMetDisabled() &&
 				!this.isPlayerCured() && (!this.isPlayerInfected() || Refs.difficulty == Refs.HARDCORE) &&
-				worldIn.getDimensionKey().equals(DimensionType.OVERWORLD);
+				worldIn.getDimensionKey().equals(World.OVERWORLD);
 	}
 
 	public void metFall(World worldIn, PlayerEntity player) {

@@ -56,8 +56,8 @@ public class ColorOutOfSpaceRender {
     	if (ColorOutOfSpaceRender.isPlayerInfected()) {
     		
     		List<String> msg = null;
-    		int textColor = 0;
-    		
+    		int textColor = 0xFFFFFFFF;
+
     		if (ColorOutOfSpaceRender.metDisableLevel < Refs.cureMaxLevel) {
     			msg = Arrays.asList(Refs.soulsCollectedMsg, ColorOutOfSpaceRender.metDisableLevel + "/" + Refs.cureMaxLevel);
     			textColor = 0xFFFF0000;

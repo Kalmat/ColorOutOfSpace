@@ -29,6 +29,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -181,7 +183,7 @@ public class ColorOutOfSpace {
 			if (time % Refs.timeIncrease == 0 && time != ColorOutOfSpace.serverPrevTime) {
 				
 				ColorOutOfSpace.serverPrevTime = time;
-
+				
 				for (PlayerEntity player : world.getPlayers()) {
 					
 					IPlayerData playerData = PlayerData.getFromPlayer(player);
@@ -321,6 +323,7 @@ public class ColorOutOfSpace {
 	public class onRenderGameOverlayListener {
 		
 		@SubscribeEvent
+		@OnlyIn(Dist.CLIENT)
 		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
 	    	ColorOutOfSpaceRender.showText(event.getMatrixStack());
 		}
@@ -411,7 +414,9 @@ public class ColorOutOfSpace {
 				Util.spawnMetSword(worldIn, player.getPosition(), true);
 			}
 			playerData.resetPlayer(usedAntidote);
-			Networking.sendToClient(new PacketInfected(false, 0, usedAntidote), (ServerPlayerEntity) player);
+			if (!worldIn.isRemote) {
+				Networking.sendToClient(new PacketInfected(false, 0, usedAntidote), (ServerPlayerEntity) player);
+			}
 		}
 	}
 }

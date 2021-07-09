@@ -1,6 +1,7 @@
 package dev.alef.coloroutofspace.bot;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,12 @@ public class MetBot {
 		fallPos = Util.getGroundLevel(worldIn, fallPos, false);
 		boolean fire = (Refs.difficulty == Refs.HARDCORE);
 		worldIn.createExplosion(null, fallPos.getX(), fallPos.getY(), fallPos.getZ(), Refs.explosionRadius, fire, Explosion.Mode.DESTROY);
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		fallPos = Util.getGroundLevel(worldIn, fallPos, true);
 		this.infectArea(worldIn, fallPos, 0, Refs.radiusIncrease, false);

@@ -33,7 +33,7 @@ public class MeteoriteBlock extends Block {
 	@Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		
-		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking())) {
+		if (placer instanceof PlayerEntity && !(((PlayerEntity)placer).isSneaking())) {
 
 			IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) placer);
 
