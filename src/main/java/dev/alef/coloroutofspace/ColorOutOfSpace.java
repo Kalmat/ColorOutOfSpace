@@ -402,7 +402,9 @@ public class ColorOutOfSpace {
 			if (justMetDisabled) {
 				worldIn.setBlockState(playerData.getMetPos(), Refs.curedMetState);
 			}
-			Networking.sendToClient(new PacketInfected(playerData.isPlayerInfected(), playerData.getMetDisableLevel(), justMetDisabled), (ServerPlayerEntity) player);
+			if (!worldIn.isRemote && player instanceof ServerPlayerEntity) {
+				Networking.sendToClient(new PacketInfected(playerData.isPlayerInfected(), playerData.getMetDisableLevel(), justMetDisabled), (ServerPlayerEntity) player);
+			}
 		}
 	
 		public static void curePlayer(World worldIn, PlayerEntity player, IPlayerData playerData, boolean usedAntidote) {
@@ -414,7 +416,7 @@ public class ColorOutOfSpace {
 				Util.spawnMetSword(worldIn, player.getPosition(), true);
 			}
 			playerData.resetPlayer(usedAntidote);
-			if (!worldIn.isRemote) {
+			if (!worldIn.isRemote && player instanceof ServerPlayerEntity) {
 				Networking.sendToClient(new PacketInfected(false, 0, usedAntidote), (ServerPlayerEntity) player);
 			}
 		}
