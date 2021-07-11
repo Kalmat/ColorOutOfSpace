@@ -1,7 +1,6 @@
 package dev.alef.coloroutofspace.bot;
 
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,13 +43,12 @@ public class MetBot {
 		fallPos = Util.getGroundLevel(worldIn, fallPos, false);
 		boolean fire = (Refs.difficulty == Refs.HARDCORE);
 		worldIn.createExplosion(null, fallPos.getX(), fallPos.getY(), fallPos.getZ(), Refs.explosionRadius, fire, Explosion.Mode.DESTROY);
-		try {
-			TimeUnit.SECONDS.sleep(1);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
+		int i = 0;
+		while (!worldIn.getBlockState(fallPos.down(2)).isSolid() && i < 10000) {
+			i++;
+		}
+
 		fallPos = Util.getGroundLevel(worldIn, fallPos, true);
 		this.infectArea(worldIn, fallPos, 0, Refs.radiusIncrease, false);
 		worldIn.setBlockState(fallPos, Refs.meteoriteState);
@@ -90,7 +88,7 @@ public class MetBot {
 				worldIn.setBlockState(pos, Refs.infectedGlassState);
 			}
 		}
-		else if (!Refs.modBlockList.contains(oldBlock)) {
+		else if (!Refs.modBlockList.contains(oldBlock) && oldBlock.getRegistryName().getNamespace().equals("minecraft")) {
 			if ((oldState.getMaterial().equals(Material.EARTH) || oldState.getMaterial().equals(Material.ORGANIC)) &&
 					ItemGroup.BUILDING_BLOCKS.equals(oldBlock.asItem().getGroup()) && Util.hasNotSolidAround(worldIn, pos)) {
 				worldIn.setBlockState(pos, Refs.infectedGrassBlockState);
