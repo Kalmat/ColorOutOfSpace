@@ -60,9 +60,17 @@ public class Util {
 	
 	public static BlockPos getGroundLevel(World worldIn, BlockPos pos, boolean afterExplosion) {
 		
-		if (worldIn.canBlockSeeSky(pos)) {
+		if (afterExplosion) {
 			for (int i = 0; i < worldIn.getHeight(); ++i) {
-				if (!worldIn.canBlockSeeSky(pos.down()) || (afterExplosion && worldIn.getBlockState(pos.down()).isSolid())) {
+				if (!worldIn.getBlockState(pos.down()).allowsMovement(worldIn, pos.down(), PathType.AIR)) {
+					return pos;
+				}
+				pos = pos.down();
+			}
+		}
+		else if (worldIn.canBlockSeeSky(pos)) {
+			for (int i = 0; i < worldIn.getHeight(); ++i) {
+				if (!worldIn.canBlockSeeSky(pos.down())) {
 					return pos;
 				}
 				pos = pos.down();

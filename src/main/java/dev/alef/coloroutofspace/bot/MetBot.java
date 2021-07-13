@@ -44,11 +44,6 @@ public class MetBot {
 		boolean fire = (Refs.difficulty == Refs.HARDCORE);
 		worldIn.createExplosion(null, fallPos.getX(), fallPos.getY(), fallPos.getZ(), Refs.explosionRadius, fire, Explosion.Mode.DESTROY);
 		
-		int i = 0;
-		while (!worldIn.getBlockState(fallPos.down(2)).isSolid() && i < 10000) {
-			i++;
-		}
-
 		fallPos = Util.getGroundLevel(worldIn, fallPos, true);
 		this.infectArea(worldIn, fallPos, 0, Refs.radiusIncrease, false);
 		worldIn.setBlockState(fallPos, Refs.meteoriteState);

@@ -66,7 +66,7 @@ public class ColorEntity extends AbstractColorEntity {
 		   return MonsterEntity
 				   .func_234295_eP_()
 				   .createMutableAttribute(Attributes.MAX_HEALTH, 120.0D)
-				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 48.0D)
+				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
 				   .createMutableAttribute(Attributes.ATTACK_SPEED, 4.0D)
 				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.4F)
 				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 20.0D)
@@ -77,7 +77,7 @@ public class ColorEntity extends AbstractColorEntity {
 		   return MonsterEntity
 				   .func_234295_eP_()
 				   .createMutableAttribute(Attributes.MAX_HEALTH, 80.0D)
-				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 48.0D)
+				   .createMutableAttribute(Attributes.FOLLOW_RANGE, 120.0D)
 				   .createMutableAttribute(Attributes.ATTACK_SPEED, 2.0D)
 				   .createMutableAttribute(Attributes.MOVEMENT_SPEED, (double)0.35F)
 				   .createMutableAttribute(Attributes.ATTACK_DAMAGE, 10.0D)

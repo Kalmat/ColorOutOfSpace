@@ -18,13 +18,14 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
+import net.minecraft.pathfinding.PathType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class MeteoriteBlock extends Block {
 
 	@SuppressWarnings("unused")
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger(); 
 	
     public MeteoriteBlock(Properties properties) {
 		super(properties);
@@ -33,7 +34,8 @@ public class MeteoriteBlock extends Block {
 	@Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		
-		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking())) {
+		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking()) &&
+				!state.allowsMovement(worldIn, pos.down(), PathType.AIR)) {
 
 			IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) placer);
 
