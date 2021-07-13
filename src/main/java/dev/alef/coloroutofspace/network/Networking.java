@@ -34,6 +34,12 @@ public class Networking {
 			.decoder(PacketInfected::new)
 			.consumer(PacketInfected::handle)
 			.add();
+        
+        INSTANCE.messageBuilder(PacketMetFall.class, nextID())
+			.encoder(PacketMetFall::toBytes)
+			.decoder(PacketMetFall::new)
+			.consumer(PacketMetFall::handle)
+			.add();
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {

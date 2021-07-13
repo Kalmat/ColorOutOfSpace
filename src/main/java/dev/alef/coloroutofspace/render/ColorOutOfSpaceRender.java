@@ -1,31 +1,39 @@
 package dev.alef.coloroutofspace.render;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import dev.alef.coloroutofspace.Refs;
+import dev.alef.coloroutofspace.network.Networking;
+import dev.alef.coloroutofspace.network.PacketMetFall;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 @SuppressWarnings("resource")
 @OnlyIn(Dist.CLIENT)
@@ -36,6 +44,8 @@ public class ColorOutOfSpaceRender {
 	
 	private static boolean playerInfected = false;
 	private static int metDisableLevel = 0;
+	
+    public static final int KEY_FALL_MET = GLFW.GLFW_KEY_M;
 	
     public static boolean isPlayerInfected() {
 		return ColorOutOfSpaceRender.playerInfected;
@@ -258,5 +268,33 @@ public class ColorOutOfSpaceRender {
 	        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + rand.nextFloat() * 0.2F, false);
 		}
 	}
+	
+    public static void registerKeybindings() {
+    	
+		List<KeyBinding> KEYBINDS = new ArrayList<KeyBinding>();
+	    KEYBINDS.add(new KeyBinding("key.lazybuilder.undo", ColorOutOfSpaceRender.KEY_FALL_MET, "key.lazybuilder.general"));
+	    
+	    for (KeyBinding keyBind : KEYBINDS) {
+	        ClientRegistry.registerKeyBinding(keyBind);
+	    }
+	}
+    
+	public static boolean isValidMetFallKey(int action, int modifiers, int key) {
+		if (action == GLFW.GLFW_PRESS && modifiers == GLFW.GLFW_MOD_CONTROL && key == ColorOutOfSpaceRender.KEY_FALL_MET &&
+				getCurrentScreen() == null && Minecraft.getInstance().player.isCreative()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static void sendMetFallToServer() {
+		ClientPlayerEntity player = Minecraft.getInstance().player;
+		BlockPos pos = ((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver).getPos();
+        Networking.sendToServer(new PacketMetFall(player.getUniqueID(), pos));
+	}
+	
+	public static Screen getCurrentScreen() {
+    	return Minecraft.getInstance().currentScreen;
+    }
 }
 
