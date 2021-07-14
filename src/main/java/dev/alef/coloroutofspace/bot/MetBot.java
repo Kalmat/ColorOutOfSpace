@@ -141,7 +141,8 @@ public class MetBot {
 				}
 			}
 			else if (ItemGroup.BUILDING_BLOCKS.equals(oldBlock.asItem().getGroup()) &&
-					 !(oldBlock instanceof BreakableBlock) && Util.hasNotSolidAround(worldIn, pos)) {
+					 !(oldBlock instanceof BreakableBlock) && Util.hasNotSolidAround(worldIn, pos) &&
+					 oldBlock.getRegistryName().getNamespace().equals("minecraft")) {
 				worldIn.setBlockState(pos, oldBlock.getDefaultState().getMaterial().equals(Material.WOOD) ? Refs.infectedWoodState : Refs.infectedState);
 			}
 		}
