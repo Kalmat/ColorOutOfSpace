@@ -29,10 +29,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
@@ -42,7 +38,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -78,8 +73,6 @@ public class ColorOutOfSpace {
         MinecraftForge.EVENT_BUS.register(new onPlayerWakeUpListener());
         MinecraftForge.EVENT_BUS.register(new onAttackEntityListener());
         MinecraftForge.EVENT_BUS.register(new onLivingDeathListener());
-        MinecraftForge.EVENT_BUS.register(new onRenderGameOverlayListener());
-        MinecraftForge.EVENT_BUS.register(new onKeyInputListener());
         
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
@@ -108,10 +101,8 @@ public class ColorOutOfSpace {
 	}
 	 
 	private void doClientStuff(final FMLClientSetupEvent event) {
-		// do something that can only be done on the client
-		BlockList.registerBlockRenderers();
-		EntityList.registerEntityRenderers();
-		ColorOutOfSpaceRender.registerKeybindings();
+		ColorOutOfSpaceRender render = new ColorOutOfSpaceRender();
+		render.doClientStuff();
 	}
 	
 	private void modConfig(final ModConfigEvent event) {
@@ -161,16 +152,13 @@ public class ColorOutOfSpace {
 			PlayerEntity player = event.getPlayer();
 			World world = player.world;
 			
-			if (!world.isRemote) {
-
-				IPlayerData origPlayerData = PlayerData.getFromPlayer(origPlayer);
-				IPlayerData playerData = PlayerData.getFromPlayer(player);
-				if (event.isWasDeath()) {
-			        playerData.copyForRespawn(origPlayerData);
-				} 
-				if (playerData.isPlayerInfected()) {
-					ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), false);
-				}
+			IPlayerData origPlayerData = PlayerData.getFromPlayer(origPlayer);
+			IPlayerData playerData = PlayerData.getFromPlayer(player);
+			if (event.isWasDeath()) {
+		        playerData.copyForRespawn(origPlayerData);
+			} 
+			if (playerData.isPlayerInfected()) {
+				ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), false);
 			}
 		}
 	}
@@ -322,28 +310,6 @@ public class ColorOutOfSpace {
     		}
 		}
 	}
-	
-	// CLIENT
-	public class onRenderGameOverlayListener {
-		
-		@SubscribeEvent
-		@OnlyIn(Dist.CLIENT)
-		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
-	    	ColorOutOfSpaceRender.showText(event.getMatrixStack());
-		}
-	}
-	
-	// CLIENT
-	public class onKeyInputListener {
-		
-		@SubscribeEvent(priority=EventPriority.NORMAL)
-		@OnlyIn(Dist.CLIENT)
-		public void KeyInput(final KeyInputEvent event) {
-			if (ColorOutOfSpaceRender.isValidMetFallKey(event.getAction(), event.getModifiers(), event.getKey())) {
-				ColorOutOfSpaceRender.sendMetFallToServer();
-			}
-		}
-    }
 	
 	public static void forceMetFall(World worldIn, ServerPlayerEntity player) {
 

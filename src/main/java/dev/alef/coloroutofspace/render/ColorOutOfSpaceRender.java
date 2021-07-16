@@ -14,6 +14,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import dev.alef.coloroutofspace.Refs;
+import dev.alef.coloroutofspace.lists.BlockList;
+import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketMetFall;
 import net.minecraft.client.Minecraft;
@@ -31,12 +33,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 @SuppressWarnings("resource")
-@OnlyIn(Dist.CLIENT)
 public class ColorOutOfSpaceRender {
 
 	@SuppressWarnings("unused")
@@ -46,11 +50,46 @@ public class ColorOutOfSpaceRender {
 	private static int metDisableLevel = 0;
 	
     public static final int KEY_FALL_MET = GLFW.GLFW_KEY_M;
+    
+ 	public ColorOutOfSpaceRender() {
+
+		// Register client mod events we use
+        MinecraftForge.EVENT_BUS.register(new onRenderGameOverlayListener());
+        MinecraftForge.EVENT_BUS.register(new onKeyInputListener());
+        
+		// Register ourselves for client and other game events we are interested in
+		MinecraftForge.EVENT_BUS.register(this);
+    }
+ 	
+	public void doClientStuff() {
+		// do something that can only be done on the client
+		BlockList.registerBlockRenderers();
+		EntityList.registerEntityRenderers();
+		ColorOutOfSpaceRender.registerKeybindings();
+	}
+	
+	public class onRenderGameOverlayListener {
+		
+		@SubscribeEvent
+		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
+	    	ColorOutOfSpaceRender.showText(event.getMatrixStack());
+		}
+	}
+	
+	public class onKeyInputListener {
+		
+		@SubscribeEvent(priority=EventPriority.NORMAL)
+		public void KeyInput(final KeyInputEvent event) {
+			if (ColorOutOfSpaceRender.isValidMetFallKey(event.getAction(), event.getModifiers(), event.getKey())) {
+				ColorOutOfSpaceRender.sendMetFallToServer();
+			}
+		}
+    }
 	
     public static boolean isPlayerInfected() {
 		return ColorOutOfSpaceRender.playerInfected;
 	}
-
+    
 	public static void setPlayerInfected(boolean isInfected, int metDisableLevel, boolean metJustDisabled) {
 		ColorOutOfSpaceRender.playerInfected = isInfected;
 		if (isInfected) {
