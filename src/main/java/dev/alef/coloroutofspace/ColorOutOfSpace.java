@@ -100,7 +100,8 @@ public class ColorOutOfSpace {
 	}
 	 
 	private void doClientStuff(final FMLClientSetupEvent event) {
-		ColorOutOfSpaceRender.doClientStuff();
+		ColorOutOfSpaceRender render = new ColorOutOfSpaceRender();
+		render.doClientStuff();
 	}
 	
 	public static class PlayerCapabilityEventListener {
