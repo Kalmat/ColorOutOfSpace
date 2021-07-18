@@ -41,7 +41,6 @@ import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
@@ -62,7 +61,6 @@ public class ColorOutOfSpace {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::parallelDispatch);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modConfig);
 		
 		// Register other events we use
 		MinecraftForge.EVENT_BUS.register(new PlayerCapabilityEventListener());
@@ -94,6 +92,7 @@ public class ColorOutOfSpace {
 	private void setup(final FMLCommonSetupEvent event) {
 	    // some preinit code
         PlayerData.registerPlayerCapability();
+    	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == Refs.HARDCORE ? Refs.HARDCORE : Refs.NORMAL;
 	}
  	
 	private void parallelDispatch(final ParallelDispatchEvent event) {
@@ -101,12 +100,7 @@ public class ColorOutOfSpace {
 	}
 	 
 	private void doClientStuff(final FMLClientSetupEvent event) {
-		ColorOutOfSpaceRender render = new ColorOutOfSpaceRender();
-		render.doClientStuff();
-	}
-	
-	private void modConfig(final ModConfigEvent event) {
-    	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == Refs.HARDCORE ? Refs.HARDCORE : Refs.NORMAL;
+		ColorOutOfSpaceRender.doClientStuff();
 	}
 	
 	public static class PlayerCapabilityEventListener {
@@ -150,7 +144,6 @@ public class ColorOutOfSpace {
 			
 			PlayerEntity origPlayer = event.getOriginal();
 			PlayerEntity player = event.getPlayer();
-			World world = player.world;
 			
 			IPlayerData origPlayerData = PlayerData.getFromPlayer(origPlayer);
 			IPlayerData playerData = PlayerData.getFromPlayer(player);

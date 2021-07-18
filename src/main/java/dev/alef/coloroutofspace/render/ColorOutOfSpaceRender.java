@@ -61,7 +61,7 @@ public class ColorOutOfSpaceRender {
 		MinecraftForge.EVENT_BUS.register(this);
     }
  	
-	public void doClientStuff() {
+	public static void doClientStuff() {
 		// do something that can only be done on the client
 		BlockList.registerBlockRenderers();
 		EntityList.registerEntityRenderers();
