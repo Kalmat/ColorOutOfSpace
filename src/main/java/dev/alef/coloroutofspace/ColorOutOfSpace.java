@@ -7,6 +7,7 @@ import dev.alef.coloroutofspace.lists.BlockList;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
+import dev.alef.coloroutofspace.network.PacketClientPlayerData;
 import dev.alef.coloroutofspace.network.PacketInfected;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
@@ -29,27 +30,34 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.config.ModConfig.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 //The value here should match an entry in the META-INF/mods.toml file
-@Mod(Refs.MODID)
+@Mod(ColorOutOfSpace.ID)
 public class ColorOutOfSpace {
 	
+	public static final String ID = "coloroutofspace";
+	public static final String NAME = "Color Out of Space";
+	public static final String VERSION = "0.5.0b";
+
 	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LogManager.getLogger();
 	
@@ -57,53 +65,54 @@ public class ColorOutOfSpace {
     
 	public ColorOutOfSpace() {
 
-		// Register modloading events
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::parallelDispatch);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-		
 		// Register other events we use
-		MinecraftForge.EVENT_BUS.register(new PlayerCapabilityEventListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerLoggedInListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerCloneListener());
-        MinecraftForge.EVENT_BUS.register(new onWorldTickListener());
-        MinecraftForge.EVENT_BUS.register(new onBlockBreakListener());
-        MinecraftForge.EVENT_BUS.register(new onPlayerWakeUpListener());
-        MinecraftForge.EVENT_BUS.register(new onAttackEntityListener());
-        MinecraftForge.EVENT_BUS.register(new onLivingDeathListener());
-        
-		// Register ourselves for server and other game events we are interested in
-		MinecraftForge.EVENT_BUS.register(this);
-		
-		// Register our custom blocks and items
+		final IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
+		forgeEventBus.register(new PlayerCapabilityEventListener());
+		forgeEventBus.register(new onPlayerLoggedInListener());
+		forgeEventBus.register(new onPlayerCloneListener());
+		forgeEventBus.register(new onWorldTickListener());
+		forgeEventBus.register(new onBreakSpeedListener());
+		forgeEventBus.register(new onBlockBreakListener());
+		forgeEventBus.register(new onPlayerWakeUpListener());
+		forgeEventBus.register(new onAttackEntityListener());
+		forgeEventBus.register(new onLivingDeathListener());
+
+		// Register modloading events
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+		modEventBus.addListener(this::setup);
+		modEventBus.addListener(this::config);
+		modEventBus.addListener(this::parallelDispatch);
+		
+		// Register our custom blocks, items and entities
 		BlockList.BLOCK_LIST.register(modEventBus);
 		BlockItemList.BLOCKITEM_LIST.register(modEventBus);
 		ItemList.ITEM_LIST.register(modEventBus);
 		EntityList.ENTITY_LIST.register(modEventBus);
 		
-		// Register custom server --> client messages
+		// Register custom server <--> client messages
 		Networking.registerMessages();
 		
         // Load config file
 		ConfigFile.registerConfig();
+		
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+				() -> () -> ColorOutOfSpaceRender.addClientListeners(forgeEventBus, modEventBus));
 	}
 	
 	private void setup(final FMLCommonSetupEvent event) {
-	    // some preinit code
+	    // preinit code
         PlayerData.registerPlayerCapability();
+	}
+ 	
+	private void config(final ModConfigEvent event) {
     	Refs.difficulty = ConfigFile.GENERAL.Difficulty.get() == Refs.HARDCORE ? Refs.HARDCORE : Refs.NORMAL;
+    	Refs.debug = ConfigFile.GENERAL.Debug.get();
 	}
  	
 	private void parallelDispatch(final ParallelDispatchEvent event) {
 		event.enqueueWork(() -> EntityList.putAttributes());
 	}
 	 
-	private void doClientStuff(final FMLClientSetupEvent event) {
-		ColorOutOfSpaceRender render = new ColorOutOfSpaceRender();
-		render.doClientStuff();
-	}
-	
 	public static class PlayerCapabilityEventListener {
 
 	    public final static ResourceLocation PlayerDataCapability = new ResourceLocation(Refs.MODID, "player_data");
@@ -133,6 +142,9 @@ public class ColorOutOfSpace {
 			}
 			else if (playerData.isPlayerInfected()) {
 				ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), false);
+			}
+			if (Refs.debug) {
+				ColorOutOfSpace.sendPlayerDataToClient(playerData, (ServerPlayerEntity) player);
 			}
 		}
 	}
@@ -196,6 +208,9 @@ public class ColorOutOfSpace {
 					else if (playerData.canMetFall(world, daysJoined)) {
 						playerData.metFall(world, player);
 					}
+					if (Refs.debug) {
+						ColorOutOfSpace.sendPlayerDataToClient(playerData, (ServerPlayerEntity) player);
+					}
 				}
 			}
 		}
@@ -231,7 +246,7 @@ public class ColorOutOfSpace {
 	public class onAttackEntityListener {
 		
 	    @SubscribeEvent
-        public void AttackEntity(AttackEntityEvent event) {
+        public void AttackEntity(final AttackEntityEvent event) {
         	
 	    	Entity target = event.getTarget();
 			PlayerEntity playerAttacking = event.getPlayer();
@@ -248,13 +263,13 @@ public class ColorOutOfSpace {
 				IPlayerData playerData = PlayerData.getFromPlayer(playerAttacked);
 
 				if (playerData.isPlayerInfected()) {
-					playerAttacking.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
+					playerAttacking.addPotionEffect(new EffectInstance(Effects.NAUSEA, 200));
 				}
 
 				playerData = PlayerData.getFromPlayer(playerAttacking);
 				
 				if (playerData.isPlayerInfected()) {
-					playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 100));
+					playerAttacked.addPotionEffect(new EffectInstance(Effects.NAUSEA, 200));
 				}
     		}
 		}
@@ -290,6 +305,20 @@ public class ColorOutOfSpace {
 		}
     }
 
+	public class onBreakSpeedListener {
+		
+		@SubscribeEvent
+		public void BreakSpeed(final BreakSpeed event) {
+			
+			IPlayerData playerData = PlayerData.getFromPlayer(event.getPlayer());
+
+    		if ((Refs.unbreakableBlockList.contains(event.getState().getBlock())) ||
+    				(event.getState().equals(Refs.curedMetState) && !event.getPos().equals(playerData.getMetPos()))) {
+				event.setNewSpeed(0.0F);
+			}
+		}
+	}
+	
  	// SERVER
 	public class onBlockBreakListener {
 		
@@ -305,12 +334,16 @@ public class ColorOutOfSpace {
 		}
 	}
 	
-	public static void forceMetFall(World worldIn, ServerPlayerEntity player) {
+	public static void sendPlayerDataToClient(IPlayerData playerData, ServerPlayerEntity player) {
+		Networking.sendToClient(new PacketClientPlayerData(playerData.createNBT()), player);
+	}
+	
+	public static void forceMetFall(World worldIn, ServerPlayerEntity player, BlockPos pos) {
 
 		IPlayerData playerData = PlayerData.getFromPlayer(player);
 		
 		ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) player, playerData, false);
-		playerData.setFallPos(player.getPosition(), true);
+		playerData.setFallPos(pos, false);
 		playerData.metFall(worldIn, player);
 	}
 	
@@ -406,4 +439,5 @@ public class ColorOutOfSpace {
 			}
 		}
 	}
+	
 }

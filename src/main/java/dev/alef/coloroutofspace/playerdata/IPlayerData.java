@@ -1,6 +1,7 @@
 package dev.alef.coloroutofspace.playerdata;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -51,4 +52,7 @@ public interface IPlayerData {
 	public void increaseMetRadius(World worldIn);
 	public void replanMetFall(int daysJoined);
 	public boolean checkMetDisableLevel();
+	
+    public CompoundNBT createNBT();
+    public IPlayerData retrieveNBT(CompoundNBT tag);
 }

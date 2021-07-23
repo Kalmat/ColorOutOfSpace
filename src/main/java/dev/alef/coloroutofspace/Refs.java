@@ -20,7 +20,8 @@ public class Refs {
 	public static final String MODID = "coloroutofspace";
 	public static final String NAME = "alef's Color out of Space";
 	public static final String VERSION = "0.0.1-BETA";
-	
+	public static Boolean debug = false;
+
 	public static int difficulty = Refs.NORMAL;
 	public static final int NORMAL = 0;
 	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to while Meteorite is Active - Aggressive entities will ALWAYS duplicate
@@ -89,7 +90,7 @@ public class Refs {
 			"Pay for your sins",
 			"Say I'm handsome",
 			"See you in Hell",
-			"Curiosity killed the cat",
+			"Curiosity killed Steve",
 			"(your) Life is overestimated",
 			"Can I borrow your blood, please?"
 	);
@@ -110,11 +111,19 @@ public class Refs {
 			Refs.infectedGlassPaneState.getBlock()
 	);
 	
+	public static final List<Block> unbreakableBlockList = Arrays.asList(
+			BlockList.color_meteorite_block,
+			BlockList.color_infected_block,
+			BlockList.color_wood_block,
+			BlockList.color_dirt_block,
+			BlockList.color_grass_block
+	);
+	
 	public static final List<Block> modBlocksToCureList = Arrays.asList(
 			BlockList.color_infected_block,
-			BlockList.color_grass_block,
 			BlockList.color_wood_block,
-			BlockList.color_dirt_block
+			BlockList.color_dirt_block,
+			BlockList.color_grass_block
 	);
 	
 	public static final List<EntityType<?>> souls = Arrays.asList(

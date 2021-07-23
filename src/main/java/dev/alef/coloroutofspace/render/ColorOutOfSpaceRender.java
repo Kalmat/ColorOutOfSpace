@@ -18,6 +18,8 @@ import dev.alef.coloroutofspace.lists.BlockList;
 import dev.alef.coloroutofspace.lists.EntityList;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketMetFall;
+import dev.alef.coloroutofspace.playerdata.IPlayerData;
+import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.FontRenderer;
@@ -27,48 +29,47 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @SuppressWarnings("resource")
 public class ColorOutOfSpaceRender {
 
 	@SuppressWarnings("unused")
     private static final Logger LOGGER = LogManager.getLogger();
+	private static Boolean debug = false;
 	
 	private static boolean playerInfected = false;
 	private static int metDisableLevel = 0;
+	private static IPlayerData clientPlayerData = new PlayerData();
 	
     public static final int KEY_FALL_MET = GLFW.GLFW_KEY_M;
     
- 	public ColorOutOfSpaceRender() {
-
-		// Register client mod events we use
-        MinecraftForge.EVENT_BUS.register(new onRenderGameOverlayListener());
-        MinecraftForge.EVENT_BUS.register(new onKeyInputListener());
-        
-		// Register ourselves for client and other game events we are interested in
-		MinecraftForge.EVENT_BUS.register(this);
-    }
- 	
-	public void doClientStuff() {
-		// do something that can only be done on the client
+	public static void addClientListeners(IEventBus forgeEventBus, IEventBus modEventBus) {
+		modEventBus.addListener(ColorOutOfSpaceRender::clientInit);
+		forgeEventBus.register(new onRenderGameOverlayListener());
+		forgeEventBus.register(new onKeyInputListener());
+	}
+	
+	private static void clientInit(final FMLClientSetupEvent event) {
 		BlockList.registerBlockRenderers();
 		EntityList.registerEntityRenderers();
 		ColorOutOfSpaceRender.registerKeybindings();
 	}
 	
-	public class onRenderGameOverlayListener {
+	public static class onRenderGameOverlayListener {
 		
 		@SubscribeEvent
 		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
@@ -76,7 +77,7 @@ public class ColorOutOfSpaceRender {
 		}
 	}
 	
-	public class onKeyInputListener {
+	public static class onKeyInputListener {
 		
 		@SubscribeEvent(priority=EventPriority.NORMAL)
 		public void KeyInput(final KeyInputEvent event) {
@@ -85,6 +86,30 @@ public class ColorOutOfSpaceRender {
 			}
 		}
     }
+	
+    public static void registerKeybindings() {
+    	
+		List<KeyBinding> KEYBINDS = new ArrayList<KeyBinding>();
+	    KEYBINDS.add(new KeyBinding("key.lazybuilder.undo", ColorOutOfSpaceRender.KEY_FALL_MET, "key.lazybuilder.general"));
+	    
+	    for (KeyBinding keyBind : KEYBINDS) {
+	        ClientRegistry.registerKeyBinding(keyBind);
+	    }
+	}
+    
+	public static boolean isValidMetFallKey(int action, int modifiers, int key) {
+		if (action == GLFW.GLFW_PRESS && modifiers == GLFW.GLFW_MOD_CONTROL && key == ColorOutOfSpaceRender.KEY_FALL_MET &&
+				getCurrentScreen() == null && Minecraft.getInstance().player.isCreative()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static void sendMetFallToServer() {
+		ClientPlayerEntity player = Minecraft.getInstance().player;
+		RayTraceResult mouse = Minecraft.getInstance().objectMouseOver;
+        Networking.sendToServer(new PacketMetFall(player.getUniqueID(), new BlockPos(mouse.getHitVec())));
+	}
 	
     public static boolean isPlayerInfected() {
 		return ColorOutOfSpaceRender.playerInfected;
@@ -102,9 +127,14 @@ public class ColorOutOfSpaceRender {
 			ColorOutOfSpaceRender.metDisableLevel = 0;
 		}
 	}
-
+	
+	public static void updateClientPlayerData(CompoundNBT tag) {
+		ColorOutOfSpaceRender.clientPlayerData.retrieveNBT(tag);
+		ColorOutOfSpaceRender.debug = true;
+	}
+	
 	public static void showText(MatrixStack matrixStack) {
-    	
+		
     	if (ColorOutOfSpaceRender.isPlayerInfected()) {
     		
     		List<String> msg = null;
@@ -118,18 +148,35 @@ public class ColorOutOfSpaceRender {
     			msg = Arrays.asList(Refs.allSoulsCollectedMsg, Refs.mineMetMsg);
     			textColor = 0xFF00FF00;
     		}
-    		ColorOutOfSpaceRender.drawCollectedSouls(msg, matrixStack, Refs.alignUpRight, textColor, false, false);
+    		ColorOutOfSpaceRender.drawText(msg, matrixStack, Refs.alignUpRight, textColor, false, false);
+    	}
+    	else if (ColorOutOfSpaceRender.debug && 
+    			   !ColorOutOfSpaceRender.clientPlayerData.isMetDisabled() && 
+    			   !ColorOutOfSpaceRender.clientPlayerData.isPlayerCured()) {
+	    		String msg2 = "";
+	    		int daysJoined = ((int) (Minecraft.getInstance().world.getGameTime() - ColorOutOfSpaceRender.clientPlayerData.getFirstJoin()) / 24000);
+	    		if (ColorOutOfSpaceRender.clientPlayerData.isMetFallen() && 
+	    				(daysJoined <= ColorOutOfSpaceRender.clientPlayerData.getFallDay() || ColorOutOfSpaceRender.clientPlayerData.getFallDay() == -1)) {
+	    			msg2 = "FALLEN";
+	    		}
+	    		else {
+	    			msg2 = daysJoined + " / " + ColorOutOfSpaceRender.clientPlayerData.getFallDay();
+	    		}
+	    		List<String> msg = Arrays.asList("Days to Fall:", msg2);
+	    		int textColor = 0xFFFFFFFF;
+	
+	    		ColorOutOfSpaceRender.drawText(msg, matrixStack, Refs.alignUpRight, textColor, false, false);
     	}
     }
-    
-	private static void drawCollectedSouls(List<String> text, MatrixStack ms, int alignTo, int color, boolean shadow, boolean transparent) {
+	
+	private static void drawText(List<String> text, MatrixStack ms, int alignTo, int color, boolean shadow, boolean transparent) {
         
-    	float scaleA = 0.7F;
+		float scaleA = 0.7F;
 		float scaleB = 1.0F;
 		int xGap = 5;
 		int yGap = 5;
 
-		//Matrix4f mat = ms.getLast().getMatrix();
+		// Matrix4f mat = ms.getLast().getMatrix();
 		//IRenderTypeBuffer.Impl buffers = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
 		FontRenderer fr = Minecraft.getInstance().fontRenderer;
 
@@ -138,7 +185,7 @@ public class ColorOutOfSpaceRender {
 		int x = calcX(alignTo, xGap, text, 0, scaleA);
 		int y = calcY(alignTo, yGap, text, 0, scaleA);
 		fr.func_238406_a_(ms, text.get(0), x, y, color, false);
-		//fr.renderString(text[0], (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
+		//fr.renderString(text.get(0), (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
 		ms.pop();
 
 		ms.push();
@@ -146,12 +193,12 @@ public class ColorOutOfSpaceRender {
 		x = calcX(alignTo, xGap, text, 1, scaleB);
 		y = calcY(alignTo, yGap, text, 1, scaleB);
 		fr.func_238406_a_(ms, text.get(1), x, y, color, false);
-		//fr.renderString(text[1], (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
+		//fr.renderString(text.get(1), (float) x, (float) y, color, shadow, mat, buffers, transparent, 0, 0xF000F0);
 		ms.pop();
 		
 		//buffers.finish();
     }
-	
+    
 	private static int calcX(int alignTo, int xGap, List<String> text, int index, float scale) {
 		
 		float ratio = 1.0F / scale;
@@ -306,30 +353,6 @@ public class ColorOutOfSpaceRender {
 	        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 10000.0F, 0.8F + rand.nextFloat() * 0.2F, false);
 	        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + rand.nextFloat() * 0.2F, false);
 		}
-	}
-	
-    public static void registerKeybindings() {
-    	
-		List<KeyBinding> KEYBINDS = new ArrayList<KeyBinding>();
-	    KEYBINDS.add(new KeyBinding("key.lazybuilder.undo", ColorOutOfSpaceRender.KEY_FALL_MET, "key.lazybuilder.general"));
-	    
-	    for (KeyBinding keyBind : KEYBINDS) {
-	        ClientRegistry.registerKeyBinding(keyBind);
-	    }
-	}
-    
-	public static boolean isValidMetFallKey(int action, int modifiers, int key) {
-		if (action == GLFW.GLFW_PRESS && modifiers == GLFW.GLFW_MOD_CONTROL && key == ColorOutOfSpaceRender.KEY_FALL_MET &&
-				getCurrentScreen() == null && Minecraft.getInstance().player.isCreative()) {
-			return true;
-		}
-		return false;
-	}
-	
-	public static void sendMetFallToServer() {
-		ClientPlayerEntity player = Minecraft.getInstance().player;
-		BlockPos pos = ((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver).getPos();
-        Networking.sendToServer(new PacketMetFall(player.getUniqueID(), pos));
 	}
 	
 	public static Screen getCurrentScreen() {

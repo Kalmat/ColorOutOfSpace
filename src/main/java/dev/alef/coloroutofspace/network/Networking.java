@@ -40,6 +40,12 @@ public class Networking {
 			.decoder(PacketMetFall::new)
 			.consumer(PacketMetFall::handle)
 			.add();
+        
+        INSTANCE.messageBuilder(PacketClientPlayerData.class, nextID())
+			.encoder(PacketClientPlayerData::toBytes)
+			.decoder(PacketClientPlayerData::new)
+			.consumer(PacketClientPlayerData::handle)
+			.add();
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {

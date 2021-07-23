@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import dev.alef.coloroutofspace.Refs;
 import dev.alef.coloroutofspace.bot.MetBot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -234,6 +235,75 @@ public class PlayerData implements IPlayerData {
 		this.setMetDisabled(deadPlayer.isMetDisabled());
         this.setPlayerInfected(deadPlayer.isPlayerInfected());
         this.setPlayerCured(deadPlayer.isPlayerCured());
+    }
+    
+    public CompoundNBT createNBT() {
+    	
+        CompoundNBT tag = new CompoundNBT();
+        
+        if (this.getMetPos() != null) {
+        	tag.putLong("MP", this.getMetPos().toLong());
+        }
+        if (this.getBedPos() != null) {
+            tag.putLong("BP", this.getBedPos().toLong());
+        }
+        if (this.getFallPos() != null) {
+        	tag.putLong("FP", this.getFallPos().toLong());
+        }
+        tag.putLong("FJ", this.getFirstJoin());
+        tag.putInt("FD", this.getFallDay());
+        tag.putBoolean("MF", this.isMetFallen());
+        tag.putBoolean("MA", this.isMetActive());
+        tag.putInt("PR", this.getPrevRadius());
+        tag.putInt("SC", this.getMetDisableLevel());
+        tag.putBoolean("MD", this.isMetDisabled());
+        tag.putBoolean("PI", this.isPlayerInfected());
+        tag.putBoolean("PC", this.isPlayerCured());
+        
+        return tag;
+    }
+
+    public IPlayerData retrieveNBT(CompoundNBT tag) {
+    	
+        long longvalue = tag.getLong("MP");
+        if (longvalue != 0L) {
+        	this.setMetPos(BlockPos.fromLong(longvalue));
+        }
+        else {
+        	this.setMetPos(null);
+        }
+        longvalue = tag.getLong("BP");
+        if (longvalue != 0L) {
+        	this.setBedPos(BlockPos.fromLong(longvalue));
+        }
+        else {
+        	this.setBedPos(null);
+        }
+        longvalue = tag.getLong("FP");
+        if (longvalue != 0L) {
+        	this.setFallPos(BlockPos.fromLong(longvalue), false);
+        }
+        else {
+        	this.setFallPos(null, false);
+        }
+        this.setFirstJoin(tag.getLong("FJ"));
+        boolean metFallen = tag.getBoolean("MF");
+        this.setMetFallen(metFallen);
+        int intvalue = tag.getInt("FD");
+        if (intvalue != 0 || !metFallen) {
+        	this.setFallDay(intvalue, false);
+        }
+        else {
+        	this.setFallDay(-1, false);
+        }
+        this.setMetActive(tag.getBoolean("MA"));
+        this.setPrevRadius(tag.getInt("PR"));
+        this.setMetDisableLevel(tag.getInt("SC"));
+        this.setMetDisabled(tag.getBoolean("MD"));
+        this.setPlayerInfected(tag.getBoolean("PI"));
+        this.setPlayerCured(tag.getBoolean("PC"));
+        
+        return this;
     }
     
     public static IPlayerData getFromPlayer(PlayerEntity player) {

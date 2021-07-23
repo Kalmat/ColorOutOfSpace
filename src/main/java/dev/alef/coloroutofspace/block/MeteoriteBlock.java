@@ -11,8 +11,8 @@ import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.bot.CalcVector;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -46,7 +46,7 @@ public class MeteoriteBlock extends Block {
 		}
 		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 	}
-    
+	
 	//CLIENT
 	@Override
     public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {

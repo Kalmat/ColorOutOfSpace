@@ -14,12 +14,16 @@ public class ConfigFile {
 
     public static class General {
         public final ForgeConfigSpec.ConfigValue<Integer> Difficulty;
+        public final ForgeConfigSpec.ConfigValue<Boolean> Debug;
 
         public General(ForgeConfigSpec.Builder builder) {
             builder.push("General");
             Difficulty = builder
-                    .comment("Difficulty [0 - Normal / 1 - Hardcore | default: 0]")
+                    .comment("Difficulty [0-Normal / 1-Hardcore | default: 0]")
                     .define("Difficulty", 0);
+            Debug = builder
+            		.comment("Print always-useless Debug info [false / true | default: false]")
+            		.define("debug", false);
             builder.pop();
         }
     }
