@@ -18,12 +18,12 @@ license="All rights reserved"
 modId="coloroutofspace" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
 version="0.0.5" #mandatory
- # A display name for the mod
+# A display name for the mod
 displayName="Color out of Space" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification <here>
 # updateJSONURL="http://myurl.me/" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
-# displayURL="http://example.com/" #optional
+displayURL="https://github.com/Kalmat/coloroutofspace" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
 #logoFile="lazybuilder.png" #optional
 # A text field displayed in the mod UI

@@ -23,7 +23,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockList {
 	
-    public static final Block color_meteorite_block = new MeteoriteBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().sound(SoundType.METAL).setLightLevel((state) -> { return 12; }));
+    public static final Block color_meteorite_block = new MeteoriteBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(1.5F, 6.0F).noDrops().sound(SoundType.METAL).setLightLevel((state) -> { return 12; }));
     public static final Block color_infected_block = new InfectedBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().setLightLevel((state) -> { return 7; }));
     public static final Block color_wood_block = new InfectedWoodBlock(Block.Properties.create(Material.WOOD).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().setLightLevel((state) -> { return 7; }));
     public static final Block color_dirt_block = new InfectedDirtBlock(AbstractBlock.Properties.create(Material.EARTH, MaterialColor.NETHERRACK).hardnessAndResistance(-1.0F, 3600000.0F).noDrops().tickRandomly().setLightLevel((state) -> { return 7; }));

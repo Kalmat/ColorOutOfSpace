@@ -38,7 +38,7 @@ public class PacketInfected {
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ColorOutOfSpaceRender.setPlayerInfected(this.infected, this.cureLevel, this.cured);
+        	ColorOutOfSpaceRender.setPlayerInfected(this.infected, this.cureLevel, this.cured);
         });
         return true;
     }

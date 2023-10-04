@@ -4,8 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.ColorOutOfSpace;
-import dev.alef.coloroutofspace.playerdata.IPlayerData;
-import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -47,11 +45,8 @@ public class CuredMetItem extends Item {
     	  if (!player.abilities.isCreativeMode) {
     		  stack.shrink(1);
     	  }
-    	  
 	      if (!worldIn.isRemote) {
-	    	  IPlayerData playerData = PlayerData.getFromPlayer(player);
-	    	  playerData.resetMet(worldIn, true, true);
-	    	  ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) entityLiving, playerData, true);
+	    	  ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) entityLiving, true);
 	      }
       }
       return stack.isEmpty() ? ItemStack.EMPTY : stack;

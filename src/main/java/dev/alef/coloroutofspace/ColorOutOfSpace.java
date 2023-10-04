@@ -9,6 +9,7 @@ import dev.alef.coloroutofspace.lists.ItemList;
 import dev.alef.coloroutofspace.network.Networking;
 import dev.alef.coloroutofspace.network.PacketClientPlayerData;
 import dev.alef.coloroutofspace.network.PacketInfected;
+import dev.alef.coloroutofspace.network.PacketMetHarvested;
 import dev.alef.coloroutofspace.playerdata.IPlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerData;
 import dev.alef.coloroutofspace.playerdata.PlayerDataProvider;
@@ -24,6 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.ResourceLocation;
@@ -35,9 +37,12 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent.WorldTickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
+import net.minecraftforge.event.entity.player.PlayerEvent.HarvestCheck;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -74,6 +79,7 @@ public class ColorOutOfSpace {
 		forgeEventBus.register(new onBreakSpeedListener());
 		forgeEventBus.register(new onBlockBreakListener());
 		forgeEventBus.register(new onPlayerWakeUpListener());
+		forgeEventBus.register(new onLivingEntityUseItemListener());
 		forgeEventBus.register(new onAttackEntityListener());
 		forgeEventBus.register(new onLivingDeathListener());
 
@@ -125,7 +131,8 @@ public class ColorOutOfSpace {
 	    }
 	}
 	
-	// SERVER
+	// ADD Block to INVENTORY when REDO
+	
 	public class onPlayerLoggedInListener {
 		
 		@SubscribeEvent
@@ -149,7 +156,6 @@ public class ColorOutOfSpace {
 		}
 	}
 	
-    // SERVER
     public class onPlayerCloneListener {
         
 		@SubscribeEvent
@@ -169,7 +175,6 @@ public class ColorOutOfSpace {
 		}
 	}
     
-    // SERVER
     public class onWorldTickListener {
         
 		@SubscribeEvent
@@ -186,7 +191,7 @@ public class ColorOutOfSpace {
 					
 					IPlayerData playerData = PlayerData.getFromPlayer(player);
 					
-					if (playerData.isPlayerInfected()) {
+					if (playerData.isPlayerInfected() && player.getActivePotionEffect(Effects.BAD_OMEN) == null) {
 						ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), false);
 					}
 					
@@ -199,7 +204,7 @@ public class ColorOutOfSpace {
 						}  
 						else if (!playerData.isPlayerCured()) {
 							if (Refs.difficulty == Refs.HARDCORE) {
-								ColorOutOfSpace.Infection.curePlayer(world, player, playerData, false);
+								ColorOutOfSpace.Infection.curePlayer(world, player, false);
 								playerData.resetMet(world, true, false);
 							}
 							playerData.replanMetFall(daysJoined);
@@ -216,7 +221,6 @@ public class ColorOutOfSpace {
 		}
     }
     
- 	// CLIENT & SERVER
     public class onPlayerWakeUpListener {
         
 		@SubscribeEvent
@@ -242,7 +246,33 @@ public class ColorOutOfSpace {
 		}
     }
     
-    // CLIENT & SERVER
+    public class onLivingEntityUseItemListener {
+        
+		@SubscribeEvent
+        public void EntityUseItem(final LivingEntityUseItemEvent event) {
+			
+			Entity entity = event.getEntity();
+			
+			if (entity instanceof PlayerEntity) {
+				
+				PlayerEntity player = (PlayerEntity) entity;
+				World world = player.world;
+				
+				if (!world.isRemote) {
+					
+					IPlayerData playerData = PlayerData.getFromPlayer(player);
+					
+					if (playerData.isPlayerInfected()) {
+						Item item = event.getItem().getItem();
+						if (item.equals(Items.MILK_BUCKET) || item.equals(Items.HONEY_BOTTLE)) {
+							ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), false);
+						}
+					}
+				}
+			}
+		}
+    }
+    
 	public class onAttackEntityListener {
 		
 	    @SubscribeEvent
@@ -304,17 +334,28 @@ public class ColorOutOfSpace {
 	        }
 		}
     }
-
-	public class onBreakSpeedListener {
+    
+    public class onBreakSpeedListener {
 		
 		@SubscribeEvent
 		public void BreakSpeed(final BreakSpeed event) {
 			
-			IPlayerData playerData = PlayerData.getFromPlayer(event.getPlayer());
-
-    		if ((Refs.unbreakableBlockList.contains(event.getState().getBlock())) ||
-    				(event.getState().equals(Refs.curedMetState) && !event.getPos().equals(playerData.getMetPos()))) {
-				event.setNewSpeed(0.0F);
+			PlayerEntity player = event.getPlayer();
+			World world = player.world;
+			
+			if (!world.isRemote) {
+			
+				IPlayerData playerData = PlayerData.getFromPlayer(player);
+				
+				if (playerData.isPlayerInfected() && player.getActivePotionEffect(Effects.MINING_FATIGUE) != null &&
+						event.getPos().equals(playerData.getMetPos())) {
+					// If there are Elder Guardians near the meteor, this is necessary or it won't be harvested
+					player.clearActivePotions();
+				}
+	    		if ((Refs.unbreakableBlockList.contains(event.getState().getBlock())) ||
+	    				(event.getState().equals(Refs.curedMetState) && !event.getPos().equals(playerData.getMetPos()))) {
+					event.setNewSpeed(0.0F);
+				}
 			}
 		}
 	}
@@ -338,13 +379,20 @@ public class ColorOutOfSpace {
 		Networking.sendToClient(new PacketClientPlayerData(playerData.createNBT()), player);
 	}
 	
+	public static void sendCuredMetHarvestedToClient(ServerPlayerEntity player) {
+		Networking.sendToClient(new PacketMetHarvested(player.getUniqueID()), player);
+	}
+	
 	public static void forceMetFall(World worldIn, ServerPlayerEntity player, BlockPos pos) {
 
 		IPlayerData playerData = PlayerData.getFromPlayer(player);
 		
-		ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) player, playerData, false);
+		ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) player, false);
 		playerData.setFallPos(pos, false);
 		playerData.metFall(worldIn, player);
+		if (!worldIn.isRemote && Refs.debug) {
+			ColorOutOfSpace.sendPlayerDataToClient(playerData, player);
+		}
 	}
 	
 	public static class Infection {
@@ -367,10 +415,10 @@ public class ColorOutOfSpace {
 			boolean ret = false;
 			IPlayerData playerData = PlayerData.getFromPlayer(player);
 	
-			if (!playerData.isPlayerCured() && player.getActivePotionEffect(Effects.POISON) == null) {
+			if (!playerData.isPlayerCured()) {
 				
 				if (!playerData.isMetDisabled() || Refs.difficulty == Refs.HARDCORE) {
-					ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), true);
+					ColorOutOfSpace.Infection.applyInfectedEffects(player, playerData.getMetDisableLevel(), !playerData.isPlayerInfected());
 					ret = true;
 				}
 
@@ -379,6 +427,9 @@ public class ColorOutOfSpace {
 					ColorEntity.spawnAntiPlayer((ServerWorld) worldIn, player, playerData.getMetPos().up(), false);
 				}
 			}
+			if (!worldIn.isRemote && Refs.debug) {
+				ColorOutOfSpace.sendPlayerDataToClient(playerData, (ServerPlayerEntity) player);
+			}
 			return ret;
 		}
 		
@@ -386,7 +437,7 @@ public class ColorOutOfSpace {
 			
 			Networking.sendToClient(new PacketInfected(true, cureLevel, false), (ServerPlayerEntity) player);
 			if (firstTime) {
-				player.addPotionEffect(new EffectInstance(Effects.POISON, 200));
+				player.addPotionEffect(new EffectInstance(Effects.POISON, Refs.timeIncrease));
 			}
 			player.addPotionEffect(new EffectInstance(Effects.BAD_OMEN, Refs.timeIncrease));
 			player.setGlowing(true);
@@ -425,17 +476,23 @@ public class ColorOutOfSpace {
 			}
 		}
 	
-		public static void curePlayer(World worldIn, PlayerEntity player, IPlayerData playerData, boolean usedAntidote) {
+		public static void curePlayer(World worldIn, PlayerEntity player, boolean usedAntidote) {
 			
 			player.clearActivePotions();
 			player.setGlowing(false);
 			
+			IPlayerData playerData = PlayerData.getFromPlayer(player);
+
 			if (usedAntidote) {
+				playerData.resetMet(worldIn, true, true);
 				Util.spawnMetSword(worldIn, player.getPosition(), true);
 			}
 			playerData.resetPlayer(usedAntidote);
 			if (!worldIn.isRemote && player instanceof ServerPlayerEntity) {
 				Networking.sendToClient(new PacketInfected(false, 0, usedAntidote), (ServerPlayerEntity) player);
+				if (!worldIn.isRemote && Refs.debug) {
+					ColorOutOfSpace.sendPlayerDataToClient(playerData, (ServerPlayerEntity) player);
+				}
 			}
 		}
 	}

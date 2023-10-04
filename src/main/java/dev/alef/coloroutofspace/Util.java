@@ -35,12 +35,10 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.server.ServerWorld;
@@ -328,30 +326,10 @@ public class Util {
 	
     public static boolean isModPresent(String modid) {
 		for (ModInfo modInfo : FMLLoader.getLoadingModList().getMods()) {
-			if (modInfo.getModId().toString().toLowerCase().equals(modid.toLowerCase())) {
+			if (modInfo.getModId().toLowerCase().equals(modid.toLowerCase())) {
 				return true;
 			}
 		}
 		return false;
-    }
-    
-    public static ResourceLocation getDimension(World world) {
-    	
-    	RegistryKey<World> dimension = world.getDimensionKey();
-    	
-    	ResourceLocation overworld = DimensionType.OVERWORLD_ID;
-    	ResourceLocation the_nether = DimensionType.THE_NETHER_ID;
-    	ResourceLocation the_end = DimensionType.THE_END_ID;
-    	
-    	if (dimension == World.OVERWORLD) {
-    		return overworld;
-    	}
-    	else if (dimension == World.THE_NETHER) {
-    		return the_nether;
-    	}
-    	else if (dimension == World.THE_END) {
-    		return the_end;
-    	}
-    	return overworld;
     }
 }

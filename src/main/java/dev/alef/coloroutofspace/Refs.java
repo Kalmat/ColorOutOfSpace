@@ -27,8 +27,8 @@ public class Refs {
 	// HARDCORE: Anitplayer AMPLIFIED strength and FIRE resistant - Infect ALL monsters - Time to cure LIMITED to while Meteorite is Active - Aggressive entities will ALWAYS duplicate
 	public static final int HARDCORE = 1;
 	
-	public static final int daysToFall = 5;
-	public static final int graceDaysToFall = 5;
+	public static final int daysToFall = 3;
+	public static final int graceDaysToFall = 3;
 	public static final int explosionRadius = 5;
 	public static final int timeIncrease = 6000; 		// 24000 = one day (clock not increasing while sleeping)
 	public static final int radiusIncrease = 3;
@@ -69,6 +69,8 @@ public class Refs {
 	public static final String soulsCollectedMsg = "Souls Collected";
 	public static final String allSoulsCollectedMsg = "ALL souls Collected!";
 	public static final String mineMetMsg = "Harvest Meteorite";
+	public static final String metHarvested = "Meteorite harvested";
+	public static final String eatMetAntidote = "Eat Color Antidote";
 	
 	public static final int curedMetSound = 0;
 	
@@ -127,7 +129,6 @@ public class Refs {
 	);
 	
 	public static final List<EntityType<?>> souls = Arrays.asList(
-			EntityType.VILLAGER,
 			EntityType.PILLAGER,
 			EntityType.WITCH,
 			EntityType.WANDERING_TRADER,
@@ -139,6 +140,7 @@ public class Refs {
 	
 	public static final List<Item> lootItems = Arrays.asList(
 			Items.OBSIDIAN,
+			Items.NETHERITE_INGOT,
 			Items.MAP,
 			Items.GOLDEN_APPLE,
 			Items.BEACON,

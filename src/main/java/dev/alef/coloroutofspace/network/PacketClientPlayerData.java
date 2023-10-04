@@ -31,7 +31,7 @@ public class PacketClientPlayerData {
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ColorOutOfSpaceRender.updateClientPlayerData(this.clientPlayerData);
+        	ColorOutOfSpaceRender.updateClientPlayerData(this.clientPlayerData);
         });
         return true;
     }

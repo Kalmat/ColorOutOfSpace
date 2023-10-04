@@ -308,7 +308,7 @@ public class PlayerData implements IPlayerData {
     
     public static IPlayerData getFromPlayer(PlayerEntity player) {
         return player
-                .getCapability(PlayerDataProvider.ColorOutOfSpaceStateCap, null)
+                .getCapability(PlayerDataProvider.coloroutofspaceStateCap, null)
                 .orElseThrow(() -> new IllegalArgumentException("LazyOptional Capability must not be empty! "+player.getScoreboardName()));
     }
     

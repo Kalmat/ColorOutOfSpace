@@ -38,6 +38,7 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -53,6 +54,7 @@ public class ColorOutOfSpaceRender {
 	
 	private static boolean playerInfected = false;
 	private static int metDisableLevel = 0;
+	private static boolean isMetHarvested = false;
 	private static IPlayerData clientPlayerData = new PlayerData();
 	
     public static final int KEY_FALL_MET = GLFW.GLFW_KEY_M;
@@ -69,11 +71,11 @@ public class ColorOutOfSpaceRender {
 		ColorOutOfSpaceRender.registerKeybindings();
 	}
 	
-	public static class onRenderGameOverlayListener {
+    public static class onRenderGameOverlayListener {
 		
 		@SubscribeEvent
 		public void RenderGameOverlay(final RenderGameOverlayEvent.Text event) {
-	    	ColorOutOfSpaceRender.showText(event.getMatrixStack());
+			ColorOutOfSpaceRender.showText(event.getMatrixStack());
 		}
 	}
 	
@@ -128,6 +130,14 @@ public class ColorOutOfSpaceRender {
 		}
 	}
 	
+	public static boolean isMetHarvested() {
+		return ColorOutOfSpaceRender.isMetHarvested;
+	}
+	
+	public static void setMetHarvested(boolean isHarvested) {
+		ColorOutOfSpaceRender.isMetHarvested = isHarvested;
+	}
+	
 	public static void updateClientPlayerData(CompoundNBT tag) {
 		ColorOutOfSpaceRender.clientPlayerData.retrieveNBT(tag);
 		ColorOutOfSpaceRender.debug = true;
@@ -144,7 +154,11 @@ public class ColorOutOfSpaceRender {
     			msg = Arrays.asList(Refs.soulsCollectedMsg, ColorOutOfSpaceRender.metDisableLevel + "/" + Refs.cureMaxLevel);
     			textColor = 0xFFFF0000;
     		}
-    		else {
+    		else if (ColorOutOfSpaceRender.isMetHarvested) {
+    			msg = Arrays.asList(Refs.metHarvested, Refs.eatMetAntidote);
+    			textColor = 0xFFFFFFFF;
+    		}
+    		else {	
     			msg = Arrays.asList(Refs.allSoulsCollectedMsg, Refs.mineMetMsg);
     			textColor = 0xFF00FF00;
     		}

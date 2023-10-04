@@ -36,7 +36,7 @@ public class PacketMetFall {
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ColorOutOfSpace.forceMetFall(ctx.get().getSender().world, ctx.get().getSender(), this.pos);
+        	ColorOutOfSpace.forceMetFall(ctx.get().getSender().world, ctx.get().getSender(), this.pos);
         });
         return true;
     }

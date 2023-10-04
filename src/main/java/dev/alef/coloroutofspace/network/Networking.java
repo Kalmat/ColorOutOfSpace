@@ -35,6 +35,12 @@ public class Networking {
 			.consumer(PacketInfected::handle)
 			.add();
         
+        INSTANCE.messageBuilder(PacketMetHarvested.class, nextID())
+			.encoder(PacketMetHarvested::toBytes)
+			.decoder(PacketMetHarvested::new)
+			.consumer(PacketMetHarvested::handle)
+			.add();
+
         INSTANCE.messageBuilder(PacketMetFall.class, nextID())
 			.encoder(PacketMetFall::toBytes)
 			.decoder(PacketMetFall::new)

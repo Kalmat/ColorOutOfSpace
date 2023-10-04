@@ -25,10 +25,9 @@ The horror which fell from the sky.
 ### THE QUEST FOR A CURE ###
 
 * To get the antidote, you need to collect a number of souls (check the souls counter on the upper right corner of the screen)
-* Only alive, human-alike mobs have souls: villagers, traders, pillagers, vindicators, invokers, illusioners and witches
+* Only alive, human-alike mobs have souls, but you need the evil ones: pillagers, vindicators, invokers, illusioners, witches and traders (yes, traders)
 * First, be sure you record somewhere the meteorite coordinates, or you have a map of the area... you'll need to come back later on
 * Do not take with you everything you have. If you get killed you will need some replacement for all you need (food, armor and weapons, mainly)
-* Find a village and kill everyone. Maybe you'll need to find several villages to gather enough souls for the cure.
 * The raids will help you to easily find more souls... though these other souls will not be so easy to collect
 
 ### THE CURE ###

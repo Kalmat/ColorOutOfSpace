@@ -9,13 +9,12 @@ import org.apache.logging.log4j.Logger;
 
 import dev.alef.coloroutofspace.ColorOutOfSpace;
 import dev.alef.coloroutofspace.bot.CalcVector;
-import dev.alef.coloroutofspace.playerdata.IPlayerData;
-import dev.alef.coloroutofspace.playerdata.PlayerData;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -37,12 +36,7 @@ public class MeteoriteBlock extends Block {
 		if (placer instanceof PlayerEntity && !worldIn.isRemote && !(((PlayerEntity)placer).isSneaking())) {
 
 			worldIn.destroyBlock(pos, false);
-
-			IPlayerData playerData = PlayerData.getFromPlayer((PlayerEntity) placer);
-
-			ColorOutOfSpace.Infection.curePlayer(worldIn, (PlayerEntity) placer, playerData, false);
-			playerData.setFallPos(pos, false);
-			playerData.metFall(worldIn, (PlayerEntity) placer);
+			ColorOutOfSpace.forceMetFall(worldIn, (ServerPlayerEntity) placer, pos);
 		}
 		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
 	}
