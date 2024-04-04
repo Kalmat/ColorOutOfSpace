@@ -1,6 +1,6 @@
 # Color Out Of Space Mod for Minecraft 1.16.3 #
 
-The horror which fell from the sky.
+The horror fell from the sky.
 
 ### STARTING OUT ###
 
@@ -63,7 +63,7 @@ The horror which fell from the sky.
 ### How do I get the jar file? ###
 
 * Download the .jar file
-* Copy the .jar file into your mods folder (local and server)
+* Copy the .jar file into your mods folder (single player and server)
 
 ### Who do I talk to? ###
 
