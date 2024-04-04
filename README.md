@@ -46,7 +46,14 @@ The horror which fell from the sky.
 * Once cured, you will be able to mine again, so now you can recover yourself and gather whatever you may need before starting looting your rewards
 
 ### How do I Install it? ###
+* Install forge 1.16.3-34.1.20 on your local, single player Minecraft 1.16.3 installation
+* This should create a folder named 'mods' in your Minecraft folder. If it doesn't, just create it
+* Copy 'ColorOutOfSpace-1.16.3.jar' file to 'mods' folder
+* If you are planning to use a Minecraft Server:
+  * Install forge server (again, 1.16.3-34.1.20) on your Minecraft 1.16.3 server installation
+  * Copy 'ColorOutOfSpace-1.16.3.jar' file to 'mods' folder of your server too
 
+### How do I Install it for development? ###
 * Prepare your mod development environment: eclipse, OpenJDK and forge (there are many tutorials on the Web)
 * Download repository
 * Copy and replace "src" folder onto your forge example project folder
