@@ -67,5 +67,5 @@ The horror which fell from the sky.
 
 ### Who do I talk to? ###
 
-* alescribano@gmail.com
+* palookjones@gmail.com
 * Will try to answer as much as I can
